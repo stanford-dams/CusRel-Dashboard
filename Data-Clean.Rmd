@@ -1,0 +1,41 @@
+---
+title: "Clean-Data.Rmd"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+WORKING_DIR <- "/Users/harrisonli/Documents/iCloud_Documents/Stanford/DAMS/AC_Transit/CusRel-Dashboard"
+```
+
+
+```{r}
+raw_data <- read_csv("CusRel-Data.csv")
+raw_stops <- read_csv("AC_transit_all_stops.csv")
+```
+
+```{r}
+# Change StopID in stops data to character, remove irrelevant columns
+stops <- raw_stops %>%
+  select(StopId, Latitude, Longitude) %>%
+  mutate(StopId = as.character(StopId))
+```
+
+
+```{r}
+# Add lat/lon columns
+cleaned_data <- raw_data %>% 
+  dplyr::filter(across(Location, ~grepl(pattern=".*\\(\\d\\d\\d\\d\\d\\)$",.))) %>%
+  mutate(StopId=substr(Location, nchar(Location)-5, nchar(Location)-1)) %>%
+  left_join(stops, by="StopId") # add lat lon to table based on stops data
+```
+
+```{r}
+# Write out
+write_csv(cleaned_data, paste(WORKING_DIR, "/Clean-CusRel-data.csv", sep=""))
+```
+

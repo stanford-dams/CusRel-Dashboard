@@ -8,3 +8,25 @@ library(leaflet)
 library(tidyverse)
 ```
 
+```{r}
+# Read in data
+cus_rel_data <- read_csv("Clean-CusRel-data.csv")
+```
+
+```{r}
+# Palette
+contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
+contact_source_palette <- colorFactor(palette="Set3", domain=contact_sources)
+color_list <- contact_source_palette(contact_sources)
+```
+
+```{r}
+the_map <- cus_rel_data %>%
+  leaflet() %>%
+    addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
+    addCircleMarkers(lat = ~Latitude, lng = ~Longitude, fill = TRUE, fillColor = ~contact_source_palette(ContactSource), fillOpacity = 0.6, stroke = FALSE, color = ~contact_source_palette(ContactSource)) %>%
+  addLegend("bottomright", colors = color_list, labels = contact_sources, title = "Contact Source")
+
+the_map
+```
+
