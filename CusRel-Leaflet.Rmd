@@ -14,6 +14,22 @@ cus_rel_data <- read_csv("Clean-CusRel-data.csv")
 ```
 
 ```{r}
+# Add Resolve Time, Incident + Receive Date; Create Label for Popup
+cus_rel_data <- cus_rel_data %>% 
+  mutate(ResolveTime = round(as.numeric(difftime(as.POSIXct(ResolvedDateTime), as.POSIXct(ReceivedDateTime), units = "days"))), 
+         ReceivedDate = as.Date(ReceivedDateTime, "%m/%d/%y", tz="PST8PDT"), 
+         IncidentDate = as.Date(IncidentDateTime, "%m/%d/%y", tz="PST8PDT")) %>% 
+  mutate(Label = str_c("<b>Received Date:</b> ", ReceivedDate, "<br/>",
+                       "<b>Incident Date:</b> ", IncidentDate, "<br/>",
+                       "<b>Location:</b> ", Location, "<br/>", 
+                       "<b>Destination:</b> ", Destination , "<br/>",
+                       "<b>Route:</b> ", Route, " &nbsp;&nbsp ", "<b>Vehicle #:</b> ", VehNo, "<br/>", 
+                       "<b>Resolve Time:</b> ", ResolveTime, " day(s)<br/>", 
+                       "<b>Reason(s):</b> ", Reasons
+                       )) # Add a Label for Popup
+```
+
+```{r}
 # Palette
 contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
 contact_source_palette <- colorFactor(palette="Set3", domain=contact_sources)
@@ -24,7 +40,11 @@ color_list <- contact_source_palette(contact_sources)
 the_map <- cus_rel_data %>%
   leaflet() %>%
     addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
-    addCircleMarkers(lat = ~Latitude, lng = ~Longitude, fill = TRUE, fillColor = ~contact_source_palette(ContactSource), fillOpacity = 0.6, stroke = FALSE, color = ~contact_source_palette(ContactSource)) %>%
+    addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
+                     fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
+                     fillOpacity = 0.6, stroke = FALSE, 
+                     color = ~contact_source_palette(ContactSource), 
+                     popup = ~Label) %>%
   addLegend("bottomright", colors = color_list, labels = contact_sources, title = "Contact Source")
 
 the_map
