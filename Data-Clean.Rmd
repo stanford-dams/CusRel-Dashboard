@@ -21,7 +21,7 @@ raw_stops <- read_csv("AC_transit_all_stops.csv")
 ```{r}
 # Change StopID in stops data to character, remove irrelevant columns
 stops <- raw_stops %>%
-  select(StopId, Latitude, Longitude) %>%
+  dplyr::select(StopId, Latitude, Longitude) %>%
   mutate(StopId = as.character(StopId))
 ```
 
@@ -31,8 +31,10 @@ stops <- raw_stops %>%
 cleaned_data <- raw_data %>% 
   dplyr::filter(across(Location, ~grepl(pattern=".*\\(\\d\\d\\d\\d\\d\\)$",.))) %>%
   mutate(StopId=substr(Location, nchar(Location)-5, nchar(Location)-1)) %>%
-  left_join(stops, by="StopId") # add lat lon to table based on stops data
+  left_join(stops, by="StopId") %>% # add lat lon to table based on stops data
+  tidyr::separate(Reasons, into = c("Reason1", "Reason2"), sep = ";", fill = "right", extra = "drop")
 ```
+
 
 ```{r}
 # Write out
