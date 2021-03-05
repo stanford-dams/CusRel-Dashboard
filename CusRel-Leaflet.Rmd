@@ -39,7 +39,7 @@ color_list <- contact_source_palette(contact_sources)
 ```{r}
 the_map <- cus_rel_data %>%
   leaflet() %>%
-    addProviderTiles(providers$Esri.NatGeoWorldMap) %>%
+    addProviderTiles(providers$Stamen.TonerLite) %>%
     addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
                      fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
                      fillOpacity = 0.6, stroke = FALSE, 
