@@ -34,28 +34,44 @@ ui <- fluidPage(
   
   sidebarLayout(
     sidebarPanel(
+      
+      sliderInput(inputId = "date",
+                  label = "Complaint Date",
+                  min = min(cus_rel_data$ReceivedDate),
+                  max = max(cus_rel_data$ReceivedDate),
+                  value = c(min(cus_rel_data$ReceivedDate),max(cus_rel_data$ReceivedDate)),
+                  dragRange = TRUE
+      ),
       checkboxGroupInput(inputId="priorities", label="Priority", 
                          selected=c("Normal", "High"), 
                          choiceNames=c("Normal", "High"), 
                          choiceValues=c("Normal", "High")),
-      pickerInput(inputId="cities", label="Incident City",
-                  choices=sort(unique(cus_rel_data$IncidentCity)),
-                  options=list('actions-box'=TRUE, 'live-search'=TRUE, size=5),
-                  multiple=TRUE),
-      pickerInput(inputId="routes", label="Route", 
-                  choices=sort(unique(cus_rel_data$Route)), 
-                  options=list('actions-box'=TRUE, 'live-search'=TRUE, size=5), 
-                  multiple=TRUE),
-      pickerInput(inputId="reasons", label="Complaint Reason", 
-                  choices=sort(unique(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique)), 
-                  options=list('actions-box'=TRUE, 'live-search'=TRUE, size=5), 
-                  multiple=TRUE),
       checkboxGroupInput(inputId="respondVia", label="Respond Via", 
                          selected=c("App", "Email", "Letter", "Phone", "None"), 
                          choiceNames=c("App", "Email", "Letter", "Phone", "None"), 
                          choiceValues=c("App", "Email", "Letter", "Phone", "None")),
+      checkboxGroupInput(inputId="contact", label="Contact Source", 
+                         selected=c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11"), 
+                         choiceNames=c("WEB", "Phone", "Social Media", "Email", "Operations", "Board of Directors","Letter","App","Walk-In","511"), 
+                         choiceValues=c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11")),
+      pickerInput(inputId="cities", label="Incident City",
+                  choices=sort(unique(cus_rel_data$IncidentCity)),
+                  selected = (unique(cus_rel_data$IncidentCity)),
+                  options=list('actions-box'=TRUE, 'live-search'=TRUE, size=5),
+                  multiple=TRUE),
+      pickerInput(inputId="routes", label="Route", 
+                  choices=sort(unique(cus_rel_data$Route)), 
+                  selected = (unique(cus_rel_data$Route)),
+                  options=list('actions-box'=TRUE, 'live-search'=TRUE, size=5), 
+                  multiple=TRUE),
+      pickerInput(inputId="reasons", label="Complaint Reason", 
+                  choices=sort(unique(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique)),
+                  selected = (unique(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique)),
+                  options=list('actions-box'=TRUE, 'live-search'=TRUE, size=5), 
+                  multiple=TRUE),
       pickerInput(inputId="department", label="Department", 
                   choices=sort(unique(cus_rel_data$ForAction)), 
+                  selected = unique(cus_rel_data$ForAction),
                   options=list('actions-box'=TRUE, 'live-search'=TRUE, size=5),
                   multiple=TRUE)
     ),
@@ -73,15 +89,23 @@ server <- function(input, output){
   # Leaflet color palette
   contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
   contact_source_palette <- colorFactor(palette="Set3", domain=contact_sources)
+  #dept <- unique(cus_rel_data$ForAction) # get unique contact sources
+  #dept_palette <- colorFactor(palette="Set3", domain=dept)
+  #respond <- unique(cus_rel_data$RespondVia) # get unique contact sources
+  #respond_palette <- colorFactor(palette="Set3", domain=respond)
+  
   # Map Output
   output$the_map <- renderLeaflet({
     color_list <- contact_source_palette(contact_sources)
+    #color_list <- dept_palette(dept)
+    #color_list <- respond_palette(respond)
     cus_rel_data %>%
       leaflet() %>%
         addProviderTiles(providers$CartoDB.Positron) %>%
         addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
                          fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
                          fillOpacity = 0.6, stroke = FALSE, 
+                         radius = 8,
                          color = ~contact_source_palette(ContactSource), 
                          popup = ~Label,
                          group = "circlemarkers") %>%
@@ -95,7 +119,9 @@ server <- function(input, output){
            Route %in% input$routes,
            RespondVia %in% input$respondVia, 
            ForAction %in% input$department, 
-           Reason1 %in% input$reasons | Reason2 %in% input$reasons)
+           Reason1 %in% input$reasons | Reason2 %in% input$reasons,
+           between(ReceivedDate, input$date[1], input$date[2]),
+           ContactSource %in% input$contact)
   )
   # Update Map After Options are Changed
   observeEvent(filtered_data(), {
@@ -105,6 +131,7 @@ server <- function(input, output){
       addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
                        fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
                        fillOpacity = 0.6, stroke = FALSE, 
+                       radius = 8,
                        color = ~contact_source_palette(ContactSource), 
                        popup = ~Label,
                        group = "circlemarkers")
