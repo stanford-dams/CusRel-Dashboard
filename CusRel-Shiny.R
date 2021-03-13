@@ -16,7 +16,8 @@ cus_rel_data <- read_csv("Clean-CusRel-data.csv")
 cus_rel_data <- cus_rel_data %>% 
   mutate(ResolveTime = round(as.numeric(difftime(as.POSIXct(ResolvedDateTime), as.POSIXct(ReceivedDateTime), units = "days"))), 
          ReceivedDate = as.Date(ReceivedDateTime, "%m/%d/%y", tz="PST8PDT"), 
-         IncidentDate = as.Date(IncidentDateTime, "%m/%d/%y", tz="PST8PDT")) %>% 
+         IncidentDate = as.Date(IncidentDateTime, "%m/%d/%y", tz="PST8PDT"), 
+         Route = toupper(Route)) %>% 
   mutate(Label = str_c("<b>Received Date:</b> ", ReceivedDate, "<br/>",
                        "<b>Incident Date:</b> ", IncidentDate, "<br/>",
                        "<b>Location:</b> ", Location, "<br/>", 
@@ -42,10 +43,11 @@ ui <- fluidPage(
                   value = c(min(cus_rel_data$ReceivedDate),max(cus_rel_data$ReceivedDate)),
                   dragRange = TRUE
       ),
-      checkboxGroupInput(inputId="priorities", label="Priority", 
-                         selected=c("Normal", "High"), 
-                         choiceNames=c("Normal", "High"), 
-                         choiceValues=c("Normal", "High")),
+      checkboxGroupButtons(inputId="priorities", label="Priority",
+                           selected=c("Normal"),
+                           justified=TRUE,
+                           choiceNames=c("Normal", "High"),
+                           choiceValues=c("Normal", "High")),
       checkboxGroupInput(inputId="respondVia", label="Respond Via", 
                          selected=c("App", "Email", "Letter", "Phone", "None"), 
                          choiceNames=c("App", "Email", "Letter", "Phone", "None"), 
@@ -55,24 +57,24 @@ ui <- fluidPage(
                          choiceNames=c("WEB", "Phone", "Social Media", "Email", "Operations", "Board of Directors","Letter","App","Walk-In","511"), 
                          choiceValues=c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11")),
       pickerInput(inputId="cities", label="Incident City",
-                  choices=sort(unique(cus_rel_data$IncidentCity)),
-                  selected = (unique(cus_rel_data$IncidentCity)),
-                  options=list('actions-box'=TRUE, 'live-search'=TRUE, size=5),
+                  choices= sort(unlist(cus_rel_data %>% select(IncidentCity) %>% filter(IncidentCity != c("NULL")) %>% unique(), use.names=FALSE)),
+                  selected = unlist(cus_rel_data %>% select(IncidentCity) %>% filter(IncidentCity != c("NULL")) %>% unique(), use.names=FALSE),
+                  options=list('actions-box'=TRUE, 'live-search'=TRUE, 'title'='Select Cities', 'live-search-placeholder'='Search for Cities', size=5),
                   multiple=TRUE),
       pickerInput(inputId="routes", label="Route", 
-                  choices=sort(unique(cus_rel_data$Route)), 
-                  selected = (unique(cus_rel_data$Route)),
-                  options=list('actions-box'=TRUE, 'live-search'=TRUE, size=5), 
+                  choices= sort(unlist(cus_rel_data %>% mutate(Route = toupper(Route)) %>% select(Route) %>% filter(Route != c("NULL", "N/A")) %>% unique(), use.names=FALSE)), 
+                  selected = unlist(cus_rel_data %>% mutate(Route = toupper(Route)) %>% select(Route) %>% filter(Route != c("NULL", "N/A")) %>% unique(), use.names=FALSE),
+                  options=list('actions-box'=TRUE, 'live-search'=TRUE, 'title'='Select Routes', 'live-search-placeholder'='Search for Routes', size=5),
                   multiple=TRUE),
       pickerInput(inputId="reasons", label="Complaint Reason", 
                   choices=sort(unique(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique)),
-                  selected = (unique(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique)),
-                  options=list('actions-box'=TRUE, 'live-search'=TRUE, size=5), 
+                  selected = sort(unique(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique)),
+                  options=list('actions-box'=TRUE, 'live-search'=TRUE, 'title'='Select Reasons', 'live-search-placeholder'='Search for Reasons', size=5), 
                   multiple=TRUE),
       pickerInput(inputId="department", label="Department", 
                   choices=sort(unique(cus_rel_data$ForAction)), 
-                  selected = unique(cus_rel_data$ForAction),
-                  options=list('actions-box'=TRUE, 'live-search'=TRUE, size=5),
+                  selected = sort(unique(cus_rel_data$ForAction)),
+                  options=list('actions-box'=TRUE, 'live-search'=TRUE, 'title'='Select Departments', 'live-search-placeholder'='Search for Departments', size=5),
                   multiple=TRUE)
     ),
     
@@ -87,8 +89,8 @@ ui <- fluidPage(
 # Define server logic
 server <- function(input, output){
   # Leaflet color palette
-  contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
-  contact_source_palette <- colorFactor(palette="Set3", domain=contact_sources)
+  priority <- unique(cus_rel_data$Priority) # get unique contact sources
+  priority_palette <- colorFactor(palette="Set3", domain=priority)
   #dept <- unique(cus_rel_data$ForAction) # get unique contact sources
   #dept_palette <- colorFactor(palette="Set3", domain=dept)
   #respond <- unique(cus_rel_data$RespondVia) # get unique contact sources
@@ -96,20 +98,20 @@ server <- function(input, output){
   
   # Map Output
   output$the_map <- renderLeaflet({
-    color_list <- contact_source_palette(contact_sources)
+    color_list <- priority_palette(priority)
     #color_list <- dept_palette(dept)
     #color_list <- respond_palette(respond)
     cus_rel_data %>%
       leaflet() %>%
         addProviderTiles(providers$CartoDB.Positron) %>%
         addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
-                         fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
+                         fill = TRUE, fillColor = ~priority_palette(Priority), 
                          fillOpacity = 0.6, stroke = FALSE, 
                          radius = 8,
-                         color = ~contact_source_palette(ContactSource), 
+                         color = ~priority_palette(Priority), 
                          popup = ~Label,
                          group = "circlemarkers") %>%
-        addLegend("bottomright", colors = color_list, labels = contact_sources, title = "Contact Source")
+        addLegend("bottomright", colors = color_list, labels = priority, title = "Priority")
   })
   # Filter Data Reactively without Shifting Map
   filtered_data <- reactive(
@@ -129,10 +131,10 @@ server <- function(input, output){
       clearGroup("circlemarkers") %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
       addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
-                       fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
+                       fill = TRUE, fillColor = ~priority_palette(Priority), 
                        fillOpacity = 0.6, stroke = FALSE, 
                        radius = 8,
-                       color = ~contact_source_palette(ContactSource), 
+                       color = ~priority_palette(Priority), 
                        popup = ~Label,
                        group = "circlemarkers")
   })
