@@ -12,21 +12,6 @@ library(tmaptools)
 # Read in data
 cus_rel_data <- read_csv("Clean-CusRel-data.csv")
 
-# Add Resolve Time, Incident + Receive Date; Create Label for Popup
-cus_rel_data <- cus_rel_data %>% 
-  mutate(ResolveTime = round(as.numeric(difftime(as.POSIXct(ResolvedDateTime), as.POSIXct(ReceivedDateTime), units = "days"))), 
-         ReceivedDate = as.Date(ReceivedDateTime, "%m/%d/%y", tz="PST8PDT"), 
-         IncidentDate = as.Date(IncidentDateTime, "%m/%d/%y", tz="PST8PDT"), 
-         Route = toupper(Route)) %>% 
-  mutate(Label = str_c("<b>Received Date:</b> ", ReceivedDate, "<br/>",
-                       "<b>Incident Date:</b> ", IncidentDate, "<br/>",
-                       "<b>Location:</b> ", Location, "<br/>", 
-                       "<b>Destination:</b> ", Destination , "<br/>",
-                       "<b>Route:</b> ", Route, " &nbsp;&nbsp ", "<b>Vehicle #:</b> ", VehNo, "<br/>", 
-                       "<b>Resolve Time:</b> ", ResolveTime, " day(s)<br/>", 
-                       "<b>Reason(s):</b> ", Reason1, if_else(is.na(Reason2), "", str_c("; ", Reason2))
-                       )) # Add a Label for Popup
-
 # Define UI
 ui <- fluidPage(
   
