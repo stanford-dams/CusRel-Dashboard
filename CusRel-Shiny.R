@@ -35,7 +35,7 @@ ui <- fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      
+      h4(textOutput("filteredRowsText", inline=TRUE)),
       sliderInput(inputId = "date",
                   label = "Complaint Date",
                   min = min(cus_rel_data$ReceivedDate),
@@ -95,7 +95,7 @@ server <- function(input, output){
   #dept_palette <- colorFactor(palette="Set3", domain=dept)
   #respond <- unique(cus_rel_data$RespondVia) # get unique contact sources
   #respond_palette <- colorFactor(palette="Set3", domain=respond)
-  
+  filteredRowsText <- reactiveVal(paste("Selected", nrow(cus_rel_data), "of", nrow(cus_rel_data), "complaints"))
   # Map Output
   output$the_map <- renderLeaflet({
     color_list <- priority_palette(priority)
@@ -125,7 +125,7 @@ server <- function(input, output){
            between(ReceivedDate, input$date[1], input$date[2]),
            ContactSource %in% input$contact)
   )
-  # Update Map After Options are Changed
+  # Update Map and filteredRowsText After Options are Changed
   observeEvent(filtered_data(), {
     proxy <- leafletProxy("the_map", data=filtered_data()) %>%
       clearGroup("circlemarkers") %>%
@@ -137,6 +137,10 @@ server <- function(input, output){
                        color = ~priority_palette(Priority), 
                        popup = ~Label,
                        group = "circlemarkers")
+    filteredRowsText(paste("Selected", nrow(filtered_data()), "of", nrow(cus_rel_data), "complaints"))
+  })
+  output$filteredRowsText <- renderText({
+    filteredRowsText()
   })
 }
 

@@ -37,8 +37,6 @@ cleaned_data <- raw_data %>%
 ```
 
 
-
-
 ```{r}
 # Write out
 write_csv(cleaned_data, paste(WORKING_DIR, "/Clean-CusRel-data.csv", sep=""))
