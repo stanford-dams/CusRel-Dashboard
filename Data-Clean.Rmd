@@ -32,8 +32,11 @@ cleaned_data <- raw_data %>%
   dplyr::filter(across(Location, ~grepl(pattern=".*\\(\\d\\d\\d\\d\\d\\)$",.))) %>%
   mutate(StopId=substr(Location, nchar(Location)-5, nchar(Location)-1)) %>%
   left_join(stops, by="StopId") %>% # add lat lon to table based on stops data
-  tidyr::separate(Reasons, into = c("Reason1", "Reason2"), sep = ";", fill = "right", extra = "drop")
+  tidyr::separate(Reasons, into = c("Reason1", "Reason2"), sep = ";", fill = "right", extra = "drop") %>%
+  filter(!is.na(Longitude) & !is.na(Latitude))
 ```
+
+
 
 
 ```{r}
