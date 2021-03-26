@@ -1,0 +1,19 @@
+.main-header .logo {
+    font-family: "Calibri", "Arial";
+    font-weight: bold;
+    font-size: 22px;
+}
+h1, h2, h3, h4, h5, h6, p {
+    font-family: "Calibri", "Arial";
+}
+h4 {
+    text-align: center;
+    margin-top: 20px;
+}
+.nav-tabs-custom .nav-tabs li.active {
+    border-top-color: #00a65a;
+}
+.legend svg text {
+    font-size: 13px;
+    font-family: "Calibri", "Arial";
+}

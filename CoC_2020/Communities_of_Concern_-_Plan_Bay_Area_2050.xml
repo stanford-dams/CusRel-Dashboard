@@ -1,0 +1,996 @@
+<?xml version="1.0" encoding="UTF-8"?><metadata>
+    <idinfo>
+        <citation>
+            <citeinfo>
+                <pubdate>20200618</pubdate>
+                <title>Communities of Concern - Plan Bay Area2050</title>
+                <geoform>vector digital data</geoform>
+                <onlink>https://services3.arcgis.com/i2dkYWmb4wHvYPda/arcgis/rest/services/communities_of_concern_2020_acs2018/FeatureServer</onlink>
+            </citeinfo>
+        </citation>
+        <descript>
+            <abstract>This data set represents all tracts within the San Francisco Bay Region, and contains attributes for the eight Metropolitan Transportation Commission (MTC) Communities of Concern (CoC) tract-level variables for exploratory purposes. MTC 2018 Communities of Concern (tract geography) is based on eight ACS 2014-2018 (ACS 2018) tract-level variables: Minority (70% threshold) Low-Income (less than 200% of Fed. poverty level, 28% threshold) Level of English Proficiency (12% threshold) Seniors 75 Years and Over (8% threshold) Zero-Vehicle Households (15% threshold) Single Parent Households (18% threshold)People with a Disability (12% threshold) Rent-Burdened Households (14% threshold) If a tract exceeds both threshold values for Low-Income and Minority shares OR exceeds the threshold value for Low-Income AND also exceeds the threshold values for three or more variables, it is a CoC.Detailed documentation on the production of this feature set can be found in the MTC Communities of Concern project documentation.</abstract>
+            <purpose>This data set represents the tracts selected as Communities of Concern for Plan Bay Area 2050. The data set was developed using American Community Survey 2014-2018 data for eight variables considered. Data was released in June 2020.</purpose>
+        </descript>
+        <status>
+            <progress>Complete</progress>
+            <update>None planned</update>
+        </status>
+        <spdom>
+            <bounding>
+                <westbc>-123.533535</westbc>
+                <eastbc>-121.208228</eastbc>
+                <northbc>38.864245</northbc>
+                <southbc>36.8930330000001</southbc>
+            </bounding>
+        </spdom>
+        <keywords>
+            <theme>
+                <themekt>ISO 19115 Topic Categories</themekt>
+                <themekey>planningCadastre</themekey>
+                <themekey>society</themekey>
+            </theme>
+            <theme>
+                <themekt>None</themekt>
+                <themekey>coc</themekey>
+                <themekey>policy</themekey>
+                <themekey>planning</themekey>
+                <themekey>environmental justice</themekey>
+                <themekey>mtc</themekey>
+                <themekey>metropolitan transportation commission</themekey>
+                <themekey>abag</themekey>
+                <themekey>association of bay area governments</themekey>
+                <themekey>community of concern</themekey>
+                <themekey>acs</themekey>
+                <themekey>american community survey</themekey>
+            </theme>
+        </keywords>
+        <accconst>None</accconst>
+        <useconst>This data is intended for planning purposes only. The Metropolitan Transportation Commission (MTC) provides spatial and attribute data (also referred to as &amp;quot;information&amp;quot;) &amp;quot;as-is,&amp;quot; and shall incur no responsibility or liability as to the completeness, currentness, or accuracy of this information. The MTC, and other agencies/cities/counties from which the data were sourced, assume no responsibility arising from use of this information by individuals, businesses, or other public entities. The data is provided with no warranty of any kind, expressed or implied, including but not limited to the implied warranties of merchantability and fitness for a particular purpose. Do not make any decisions based on this data before validating your decision with the appropriate city, county, or government entity.</useconst>
+        <ptcontac>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>Metropolitan Transportation Commission</cntorg>
+                    <cntper>Data &amp; Visualization</cntper>
+                </cntorgp>
+                <cntaddr>
+                    <addrtype>mailing and physical</addrtype>
+                    <address>375 Beale Street, Suite 800</address>
+                    <city>San Francisco</city>
+                    <state>California</state>
+                    <postal>94105</postal>
+                    <country>US</country>
+                </cntaddr>
+                <cntvoice>(415) 778-6700</cntvoice>
+                <cntemail>dataviz@bayareametro.gov</cntemail>
+                <hours>9:00 AM - 5:00 PM (PST) Monday through Friday</hours>
+            </cntinfo>
+        </ptcontac>
+        <datacred>Metropolitan Transportation Commission, 2020</datacred>
+        <native>Esri ArcGIS 12.5.1.22081</native>
+    </idinfo>
+    <spdoinfo>
+        <direct>Vector</direct>
+        <ptvctinf>
+            <sdtsterm>
+                <sdtstype>GT-polygon composed of chains</sdtstype>
+                <ptvctcnt>0</ptvctcnt>
+            </sdtsterm>
+        </ptvctinf>
+    </spdoinfo>
+    <eainfo>
+        <detailed>
+            <enttyp>
+                <enttypl>communities_of_concern_2020_acs2018</enttypl>
+            </enttyp>
+            <attr>
+                <attrlabl>OBJECTID</attrlabl>
+                <attrdef>Internal feature number.</attrdef>
+                <attrdefs>Esri</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <udom>Sequential unique whole numbers that are automatically generated.</udom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>Shape</attrlabl>
+                <attrdef>Feature geometry.</attrdef>
+                <attrdefs>Esri</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <udom>Coordinates defining the features.</udom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>geoid</attrlabl>
+                <attrdef>Geographic identifier assigned by the United States Census Bureau. Data users rely on GEOIDs to join demographic data from census and survey tables to the appropriate geographic object. The geographic objects for this feature set are Census Tracts.</attrdef>
+                <attrdefs>MTC and United States Census Bureau</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>state_fip</attrlabl>
+                <attrdef>State Federal Information Processing Series (FIPS) code.
+
+The only value for this attribute is 06 (California).</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>county_fip</attrlabl>
+                <attrdef>County Federal Information Processing Standards (FIPS) code.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>001</edomv>
+                                                						
+                        
+                        <edomvd>Alameda County</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>013</edomv>
+                                                						
+                        
+                        <edomvd>Contra Costa County</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>041</edomv>
+                                                						
+                        
+                        <edomvd>Marin County</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>055</edomv>
+                                                						
+                        
+                        <edomvd>Napa County</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>075</edomv>
+                                                						
+                        
+                        <edomvd>San Francisco, City and County of</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>081</edomv>
+                                                						
+                        
+                        <edomvd>San Mateo County</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>085</edomv>
+                                                						
+                        
+                        <edomvd>Santa Clara County</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>095</edomv>
+                                                						
+                        
+                        <edomvd>Solano County</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>097</edomv>
+                                                						
+                        
+                        <edomvd>Sonoma County</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>tract</attrlabl>
+                <attrdef>Census Tract identifier. Census tracts are small, relatively permanent statistical subdivisions of a county.
+
+Value comes from the Unites States Census' TIGERweb REST API Generalized_ACS2018/Tracts_Blocks 2018 web service. The service is located at https://tigerweb.geo.census.gov/tigerwebmain/TIGERweb_restmapservice.html</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>tot_pop</attrlabl>
+                <attrdef>Universe: Total Population.
+
+Population values are from ACS table B03002_001E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>tot_pop_po</attrlabl>
+                <attrdef>Universe: Total population for whom poverty status is determined.
+
+Low income population values are from ACS table C17002_001E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>tot_pop_ci</attrlabl>
+                <attrdef>Universe: Total civilian noninstitutionalized population. Represents number of persons who do not live in an institutionalized setting. The civilian noninstitutional population refers to people 16 years of age and older residing in the 50 States and the District of Columbia who are not inmates of institutions (penal, mental facilities, homes for the aged), and who are not on active duty in the Armed Forces.
+
+Civilian noninstitutionalized population values are from ACS table C18108_001E.</attrdef>
+                <attrdefs>MTC and Wikipedia</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>tot_hh</attrlabl>
+                <attrdef>Universe: Total households. A household is defined as an occupied housing unit. Household type is identified by the presence of relatives and the number of persons living in the household. Family households, with or without children, include married couples and other families—a male or female householder with no spouse present. Non-family households may be a group of unrelated persons or a single person living alone.
+
+Number of households values are from ACS table B08201_001E.</attrdef>
+                <attrdefs>MTC and Esri</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pop_zvhhs</attrlabl>
+                <attrdef>Number of persons living in households that do not own a personal vehicle.
+
+Zero-vehicle household population values are from ACS table B08201_002E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>tot_fam</attrlabl>
+                <attrdef>Universe: Families. Families are defined as households in which one or more persons in the household are related to the householder (formerly, the head of the household) by birth, marriage, or adoption. The census tabulates only one family per household.
+
+Values for number of families are from ACS table B11004_001E.</attrdef>
+                <attrdefs>MTC and United States Census Bureau</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>tot_pop_ov</attrlabl>
+                <attrdef>Universe: Total population 5 years and over.
+
+Values for number of persons aged five years and older are from ACS table B16005_001E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pop_hus_re</attrlabl>
+                <attrdef>Number of persons living in a severely rent-burdened household. Severe rent burden is defined as persons or families paying more than 50 percent of their income for rental housing.
+
+Rent burdened population values are from ACS table B25070_010E.</attrdef>
+                <attrdefs>MTC and United States Census Bureau</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pop_minori</attrlabl>
+                <attrdef>Number of persons who report as being a race or ethnicity other than non-Hispanic white.
+
+Minority population values are the result of ACS table calculation B03002_001E - B03002_003E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pop_over75</attrlabl>
+                <attrdef>Number of seniors aged 75 years and older.
+
+Population of persons older than 75 years of age values are the result of ACS table calculation B01001_023E + B01001_024E + B01001_025E + B01001_047E + B01001_048E + B01001_049E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pop_spfam</attrlabl>
+                <attrdef>Number of persons living in families headed by a single individual.
+
+Single-parent family population values are the result of ACS table calculation B11004_010E + B11004_016E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pop_lep</attrlabl>
+                <attrdef>Number of limited English proficiency population as a share of total population aged 5 years and over. Limited English proficiency (LEP) refers to anyone above the age of 5 who reported speaking English less than “very well,” as classified by the United States Census Bureau. Though most LEP individuals are immigrants, there are a number who were born in the United States, most to immigrant parents.
+
+Limited English proficiency population values are the result of ACS table calculation B16005_007E + B16005_008E + B16005_012E + B16005_013E + B16005_017E + B16005_018E + B16005_022E + B16005_023E + B16005_029E + B16005_030E + B16005_034E + B16005_035E + B16005_039E + B16005_040E + B16005_044E + B16005_045E.</attrdef>
+                <attrdefs>MTC and United States Census Bureau</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pop_below2</attrlabl>
+                <attrdef>Low income population.  Low income designation is determined as number of persons living in a household with incomes less than 200% of the federal poverty level established by the Census Bureau. 
+
+The low income (&lt; 200% of federal poverty level) population values are the result of ACS table calculation C17002_001E - C17002_008E.</attrdef>
+                <attrdefs>MTC and United States Census Bureau</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pop_disabi</attrlabl>
+                <attrdef>Number of persons with a disability. For the American Community Survey (ACS) data used in this feature set, disability is defined as the product of interactions among individuals’ bodies; their physical, emotional, and mental health; and the physical and social environment in which they live, work, or play.  Disability exists where this interaction results in limitations of activities and restrictions to full participation at school, at work, at home, or in the community. The ACS identifies serious difficulty with four basic areas of functioning – hearing, vision, cognition, and ambulation.
+
+The disabled population values are the result of ACS table calculation C18108_001E - (C18108_005E + C18108_009E + C18108_013E).</attrdef>
+                <attrdefs>MTC and United States Census Bureau</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pct_minori</attrlabl>
+                <attrdef>Minority population as a share of total population.
+
+Minority percent values are the result of ACS table calculation (B03002_001E - B03002_003E)/B03002_001E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pct_over75</attrlabl>
+                <attrdef>Seniors aged 75 years and over as a share of total population. 
+
+Percent of persons aged 75 years and over values are the result of ACS table calculation (B01001_023E + B01001_024E + B01001_025E + B01001_047E + B01001_048E + B01001_049E)/B01001_001E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pct_spfam</attrlabl>
+                <attrdef>Single-parent families as a share all families.
+
+Percent of single-parent families values are the result of ACS table calculation (B11004_010E + B11004_016E)/B11004_001E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pct_lep</attrlabl>
+                <attrdef>Limited English proficiency population as a share of total population 5 years and over.
+
+Limited English proficiency as percent of population values are the result of ACS table calculation (B16005_007E + B16005_008E + B16005_012E + B16005_013E + B16005_017E + B16005_018E + B16005_022E + B16005_023E + B16005_029E + B16005_030E + B16005_034E + B16005_035E + B16005_039E + B16005_040E + B16005_044E + B16005_045E)/B16005_001E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pct_below2</attrlabl>
+                <attrdef>Low Income population as a share of total population for whom poverty status is determined.
+
+Values for the percent of population that is low income are the result of ACS table calculation C17002_001E - C17002_008E/C17002_001E</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pct_disab</attrlabl>
+                <attrdef>Disabled population as a share of total civilian noninstitutionalized population.
+
+Disabled population percent values are from ACS table calculation (C18108_001E - (C18108_005E + C18108_009E + C18108_013E))/C18108_001E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pct_zvhhs</attrlabl>
+                <attrdef>Zero-vehicle households as a share of total households.
+
+Values for percent of zero-vehicle households are from ACS table calculation B08201_002E/B08201_001E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>pct_hus_re</attrlabl>
+                <attrdef>Severely rent-burdened household as a share of total renter-occupied housing units.
+
+Values for percent of severely rent-burdened households are from ACS table calculation B25070_010E/B08201_001E.</attrdef>
+                <attrdefs>MTC</attrdefs>
+            </attr>
+            <attr>
+                <attrlabl>over75_1_2</attrlabl>
+                <attrdef>Seniors aged 75 and over make up over regional mean plus .5 standard deviation of the total population in a given Census Tract.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>False</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>True</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>minori_1_2</attrlabl>
+                <attrdef>Minorities make up over regional mean plus .5 standard deviation of the total population in a given Census Tract.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>False</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>True</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>spfam_1_2</attrlabl>
+                <attrdef>Single-parent families make up over regional mean plus .5 standard deviation of the families in a given Census Tract.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>False</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>True</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>disab_1_2</attrlabl>
+                <attrdef>Disabled people make up over regional mean plus .5 standard deviation of the total civilian noninstitutionalized population in a given Census Tract.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>False</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>True</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>lep_1_2</attrlabl>
+                <attrdef>People with limited English proficiency make up over regional mean plus .5 standard deviation of the total population 5 years and over in a given Census Tract.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>False</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>True</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>below2_1_2</attrlabl>
+                <attrdef>Low-income (incomes less than 200% of the federal poverty level) people make up over regional mean plus .5 standard deviation of the total population for whom poverty status is determined in a given Census Tract.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>False</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>True</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>zvhh_1_2</attrlabl>
+                <attrdef>Zero-vehicle households make up over regional mean plus .5 standard deviation of the total households in a given Census Tract.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>False</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>True</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>hus_re_1_2</attrlabl>
+                <attrdef>Severely rent-burdened households make up over regional mean plus .5 standard deviation of total renter-occupied housing units in a given Census Tract.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>False</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>True</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>coc_2035</attrlabl>
+                <attrdef>The Census Tract meets MTC's Plan Bay Area 2035 Communities of Concern criteria.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>False</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>True</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>coc_2040</attrlabl>
+                <attrdef>The Census Tract meets MTC's Plan Bay Area 2040 Communities of Concern criteria.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>False</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>True</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>coc_2050</attrlabl>
+                <attrdef>The Census Tract meets MTC's Plan Bay Area 2050 Communities of Concern criteria.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>False</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>True</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>c2040_2050</attrlabl>
+                <attrdef>Difference between Plan Bay Area 2040 Communities of Concern and Plan Bay Area 2050 Communities of Concern.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>1</edomv>
+                                                						
+                        
+                        <edomvd>New Community of Concern tract.</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>-1</edomv>
+                                                						
+                        
+                        <edomvd>No longer a Community of Concern tract.</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>0</edomv>
+                                                						
+                        
+                        <edomvd>No difference in Community of Concern status.</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>coc_class</attrlabl>
+                <attrdef>The Community of Concern ranking as determined by standard deviation (SD) from regional mean.</attrdef>
+                <attrdefs>MTC</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>High</edomv>
+                                                						
+                        
+                        <edomvd>0.5 standard deviation from regional mean.</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>Higher</edomv>
+                                                						
+                        
+                        <edomvd>1 standard deviation from regional mean.</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+                <attrdomv>
+                                        					
+                    
+                    <edom>
+                                                						
+                        
+                        <edomv>Highest</edomv>
+                                                						
+                        
+                        <edomvd>1.5 standard deviation from regional mean.</edomvd>
+                                                					
+                    
+                    </edom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>Shape_Length</attrlabl>
+                <attrdef>Length of feature in internal units.</attrdef>
+                <attrdefs>Esri</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <udom>Positive real numbers that are automatically generated.</udom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+            <attr>
+                <attrlabl>Shape_Area</attrlabl>
+                <attrdef>Area of feature in internal units squared.</attrdef>
+                <attrdefs>Esri</attrdefs>
+                <attrdomv>
+                                        					
+                    
+                    <udom>Positive real numbers that are automatically generated.</udom>
+                                        				
+                
+                </attrdomv>
+            </attr>
+        </detailed>
+    </eainfo>
+    <metainfo>
+        <metd>20200622</metd>
+        <metc>
+            <cntinfo>
+                <cntorgp>
+                    <cntorg>Metropolitan Transportation Commission</cntorg>
+                    <cntper>Data &amp; Visualization</cntper>
+                </cntorgp>
+                <cntaddr>
+                    <addrtype>mailing and physical</addrtype>
+                    <address>375 Beale Street, Suite 800</address>
+                    <city>San Francisco</city>
+                    <state>California</state>
+                    <postal>94105</postal>
+                    <country>US</country>
+                </cntaddr>
+                <cntvoice>(415) 778-6700</cntvoice>
+                <cntemail>dataviz@bayareametro.gov</cntemail>
+                <hours>9:00 AM - 5:00 PM (PST) Monday through Friday</hours>
+            </cntinfo>
+        </metc>
+        <metstdn>FGDC Content Standard for Digital Geospatial Metadata</metstdn>
+        <metstdv>FGDC-STD-001-1998</metstdv>
+        <mettc>local time</mettc>
+    </metainfo>
+</metadata>
