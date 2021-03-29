@@ -58,28 +58,28 @@ ui <- dashboardPage(
                          selected = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11"), 
                          choiceNames = c("WEB", "Phone", "Social Media", "Email", "Operations", "Board of Directors","Letter","App","Walk-In","511"), 
                          choiceValues = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11")),
-      pickerInput(inputId = "cities", label = "Incident City", width = "auto", 
+      pickerInput(inputId = "cities", label = "Incident City", width = "250px", 
                   choices = sort(unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE)),
                   selected = unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE),
-                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Cities', 'live-search-placeholder' = 'Search for Cities', size = 5),
+                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Cities', 'live-search-placeholder' = 'Search for Cities', 'selected-text-format' = 'count > 3', 'size' = 5),
                   multiple = TRUE),
-      pickerInput(inputId = "routes", label = "Route", width = "auto", 
+      pickerInput(inputId = "routes", label = "Route", width = "250px", 
                   choices = cus_rel_data %>% pull(Route) %>% unique(), 
                   selected = cus_rel_data %>% pull(Route) %>% unique(),
-                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Routes', 'live-search-placeholder' = 'Search for Routes', size = 5),
+                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Routes', 'live-search-placeholder' = 'Search for Routes', 'selected-text-format' = 'count > 3', 'size' = 5),
                   multiple = TRUE),
-      pickerInput(inputId = "reasons", label = "Complaint Reason", width = "auto", 
+      pickerInput(inputId = "reasons", label = "Complaint Reason", width = "250px", 
                   choices = sort(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique),
                   selected = sort(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique),
-                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Reasons', 'live-search-placeholder' = 'Search for Reasons', size = 5), 
+                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Reasons', 'live-search-placeholder' = 'Search for Reasons', 'selected-text-format' = 'count > 3', 'size' = 5), 
                   multiple = TRUE),
-      pickerInput(inputId = "department", label = "Department", width = "auto", 
+      pickerInput(inputId = "department", label = "Department", width = "250px", 
                   choices = sort(unique(cus_rel_data$ForAction)), 
                   selected = sort(unique(cus_rel_data$ForAction)),
-                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Departments', 'live-search-placeholder' = 'Search for Departments', size = 5),
+                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Departments', 'live-search-placeholder' = 'Search for Departments', 'selected-text-format' = 'count > 3', 'size' = 5),
                   multiple = TRUE)
     ),
-    
+  
     # Show a plot of the generated distribution
     dashboardBody(
       tags$head(
