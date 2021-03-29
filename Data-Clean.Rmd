@@ -55,6 +55,15 @@ cleaned_data <- cleaned_data %>%
 ```
 
 ```{r}
+# Change N/A and NULL into Unknown
+cleaned_data <- cleaned_data %>%
+  mutate(IncidentCity = ifelse((IncidentCity %in% c("NULL", "N/A")), "Unknown", IncidentCity),
+         Route = ifelse((Route %in% c("NULL", "N/A") | is.na(Route)), "Unknown", Route),
+         ForAction = ifelse(is.na(ForAction), "Unknown", ForAction))
+```
+
+
+```{r}
 # Write out
 write_csv(cleaned_data, paste(WORKING_DIR, "/Clean-CusRel-data.csv", sep=""))
 ```
