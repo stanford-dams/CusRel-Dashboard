@@ -39,7 +39,8 @@ ui <- dashboardPage(
                   titleWidth = 350),
   
   dashboardSidebar(
-      h4(textOutput("filteredRowsText", inline = TRUE)), 
+      h4(textOutput("filteredRowsText", inline = TRUE)),
+      column(width = 12, align = "center", actionButton("refreshCoC", "Refresh communities of concern map")),
       width = 350, 
       column(width = 12, align = "center", sliderInput(inputId = "date",
                   label = "Complaint Date",
@@ -49,7 +50,7 @@ ui <- dashboardPage(
                   dragRange = TRUE
       )),
       checkboxGroupButtons(inputId = "priorities", label = "Priority", justified = TRUE, 
-                           selected = c("Normal"),
+                           selected = c("Normal", "High"),
                            choices = c("Normal", "High")),
       checkboxGroupButtons(inputId = "respondVia", label = "Respond Via", justified = TRUE, 
                          selected = c("App", "Email", "Letter", "Phone", "None"), 
@@ -138,7 +139,7 @@ server <- function(input, output){
                   group = "coc_polygons") %>% 
       addLegend("bottomright", pal = coc_palette, 
                 values = c(0, 1), bins = c(0.00, 0.25, 0.50, 0.75, 1.00), 
-                title = "Complaint<br/>Density")
+                title = "Relative<br/>Complaint<br/>Density")
   })
   # Filter Data Reactively without Shifting Map
   filtered_data <- reactive(
@@ -164,6 +165,9 @@ server <- function(input, output){
                        color = "#000", weight = 4, opacity = 0.1, 
                        popup = ~Label,
                        group = "circlemarkers")
+      filteredRowsText(paste("Selected", nrow(filtered_data()), "of", nrow(cus_rel_data), "complaints"))
+  }) 
+  observeEvent(input$refreshCoC, {
     # Create new CoC Data
     cus_rel_sf <- st_as_sf(filtered_data(), coords = c("Longitude", "Latitude"))
     st_crs(cus_rel_sf) <- 4326
@@ -191,7 +195,6 @@ server <- function(input, output){
                   label = Labels, 
                   popup = ~Popup, 
                   group = "coc_polygons")
-    filteredRowsText(paste("Selected", nrow(filtered_data()), "of", nrow(cus_rel_data), "complaints"))
   })
   # Number of Complaints Shown
   output$filteredRowsText <- renderText({
