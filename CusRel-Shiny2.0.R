@@ -9,6 +9,7 @@ library(leaflet.extras)
 library(ggmap)
 library(tmaptools)
 library(shinydashboard)
+library(DT)
 
 # Read in data
 cus_rel_data <- read_csv("Clean-CusRel-data.csv")
@@ -33,14 +34,14 @@ cus_rel_coc <- cus_rel_coc %>%
 # Define UI
 ui <- dashboardPage(
   
-  skin = "green",
+  skin = "green", 
   # Application title
   dashboardHeader(title = "AC Transit Customer Complaints", 
-                  titleWidth = 380),
+                  titleWidth = 380), 
   
   dashboardSidebar(
       h4(textOutput("filteredRowsText", inline = TRUE)),
-      column(width = 12, align = "center", actionButton("refreshCoC", "Refresh Communities of Concern Map")),
+      # column(width = 12, align = "center", actionButton("refreshCoC", "Refresh Communities of Concern Map")),
       width = 380, 
       column(width = 12, align = "center", sliderInput(inputId = "date",
                   label = "Complaint Date",
@@ -85,15 +86,18 @@ ui <- dashboardPage(
     dashboardBody(
       tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
-      ), 
+      ),
       fluidRow(
         tabBox(id = "tabset1", width = 12, 
-          tabPanel("Stops Map", leafletOutput("point_map", height = "650px")), 
-          tabPanel("Communities of Concern", leafletOutput("CoC_map", height = "650px")), 
+          tabPanel("Stops Map", leafletOutput("point_map", height = "600px")), 
+          tabPanel("Communities of Concern Map", 
+                   fluidRow(column(width = 12,
+                     absolutePanel(actionButton("refreshCoC", "Refresh Map", icon = icon("sync-alt")), right = "20px", top = "5px", style = "z-index: 1;"),
+                     leafletOutput("CoC_map", height = "600px")))), 
           tabPanel("Raw Data", 
-                   numericInput("maxrows", "Rows to show", 25), 
-                   verbatimTextOutput("dataTable"), 
-                   downloadButton("downloadCsv", "Download as CSV"))
+                   DTOutput("dataTable"), 
+                   downloadButton("downloadCSV", "Download as CSV")
+                   )
         )
       )
     )
@@ -200,20 +204,20 @@ server <- function(input, output){
   output$filteredRowsText <- renderText({
     filteredRowsText()
   })
+  # Display filtered data
+  output$dataTable = renderDT(
+    datatable(filtered_data()[,names(filtered_data()) != "Label"], 
+              selection = "none", class = 'row-border stripe nowrap', 
+              options = list(scrollX = TRUE, scrollY = "500px", scrollCollapse = TRUE, deferRender = TRUE))
+  )
   # Download CSV of filtered complaints
-  output$downloadCsv <- downloadHandler(
+  output$downloadCSV <- downloadHandler(
     filename = "Bus_Complaints.csv",
     content = function(file) {
       write.csv(filtered_data()[,names(filtered_data()) != "Label"], file)
     },
     contentType = "text/csv"
   )
-  # Display filtered data
-  output$dataTable <- renderPrint({
-    orig <- options(width = 1000)
-    print(tail(filtered_data()[,names(filtered_data()) != "Label"], input$maxrows), row.names = FALSE)
-    options(orig)
-  })
 }
 
 # Run the application 
