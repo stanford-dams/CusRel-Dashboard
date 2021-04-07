@@ -11,8 +11,15 @@ library(tmaptools)
 library(shinydashboard)
 library(DT)
 
-# Read in data
-cus_rel_data <- read_csv("Clean-CusRel-data.csv")
+select <- dplyr::select
+
+# Read in data, getting rid of time zone attribute
+cus_rel_data <- read_csv("Clean-CusRel-data.csv") %>%
+  mutate(ReceivedDateTime=as.character(ReceivedDateTime),
+         ResolvedDateTime=as.character(ResolvedDateTime),
+         IncidentDateTime=as.character(IncidentDateTime),
+         updatedOn=as.character(updatedOn))
+
 coc_data <- st_read("./CoC_2020")
 st_crs(coc_data) <- 4326
 cus_rel_sf <- st_as_sf(cus_rel_data, coords = c("Longitude", "Latitude"))

@@ -37,6 +37,16 @@ cleaned_data <- raw_data %>%
 ```
 
 ```{r}
+cleaned_data <- cleaned_data %>%
+  mutate(ReceivedDateTime=as.POSIXlt(as.character(ReceivedDateTime), tz="PST8PDT"),
+         ResolvedDateTime=as.POSIXlt(as.character(ResolvedDateTime), tz="PST8PDT"),
+         IncidentDateTime=as.POSIXlt(as.character(IncidentDateTime), tz="PST8PDT"),
+         updatedOn=as.POSIXlt(as.character(updatedOn), tz="PST8PDT"))
+```
+
+
+
+```{r}
 # Add Resolve Time, Incident + Receive Date; Create Label for Popup
 cleaned_data <- cleaned_data %>% 
   mutate(ResolveTime = round(as.numeric(difftime(as.POSIXct(ResolvedDateTime), as.POSIXct(ReceivedDateTime), units = "days"))), 
