@@ -9,6 +9,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r}
 library(tidyverse)
+library(readr)
+library(gtools)
 WORKING_DIR <- "/Users/harrisonli/Documents/iCloud_Documents/Stanford/DAMS/AC_Transit/CusRel-Dashboard"
 ```
 
@@ -72,9 +74,35 @@ cleaned_data <- cleaned_data %>%
          ForAction = ifelse(is.na(ForAction), "Unknown", ForAction))
 ```
 
+```{r}
+# 4/28 edits: Sorting the Routes, Reason1/2, and ForAction columns
+
+# Make a copy
+copy_cleaned_data <- cleaned_data
+
+# Actually sorting the columns
+edited_Routes <- mixedsort(cleaned_data$Route, decreasing = FALSE)
+edited_Reason1 <- str_sub(cleaned_data$Reason1, 5)
+edited_Reason2 <- str_sub(cleaned_data$Reason2, 5)
+edited_ForAction <- if_else(cleaned_data$ForAction == "Unknown", cleaned_data$ForAction, str_sub(cleaned_data$ForAction, 4))
+
+# Replacing corresponding columns in df
+copy_cleaned_data[["Route"]] <- edited_Routes
+copy_cleaned_data[["Reason1"]] <- edited_Reason1
+copy_cleaned_data[["Reason2"]] <- edited_Reason2
+copy_cleaned_data[["ForAction"]] <- edited_ForAction
+```
+
 
 ```{r}
 # Write out
 write_csv(cleaned_data, paste(WORKING_DIR, "/Clean-CusRel-data.csv", sep=""))
 ```
+
+```{r}
+# Write out (4/28 edits)
+write.csv(copy_cleaned_data, "/Users/cynthiachen/Desktop/School stuff/DAMS/CusRel-dashboard/Clean-CusRel-data.csv")
+```
+
+
 

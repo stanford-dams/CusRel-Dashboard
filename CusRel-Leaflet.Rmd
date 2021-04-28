@@ -10,7 +10,7 @@ library(tidyverse)
 
 ```{r}
 # Read in data
-cus_rel_data <- read_csv("Clean-CusRel-data.csv")
+cus_rel_data <- read_csv("cus_rel_data1.csv")
 ```
 
 ```{r}
@@ -25,7 +25,8 @@ cus_rel_data <- cus_rel_data %>%
                        "<b>Destination:</b> ", Destination , "<br/>",
                        "<b>Route:</b> ", Route, " &nbsp;&nbsp ", "<b>Vehicle #:</b> ", VehNo, "<br/>", 
                        "<b>Resolve Time:</b> ", ResolveTime, " day(s)<br/>", 
-                       "<b>Reason(s):</b> ", Reason1, "&nbsp", Reason2
+                       "<b>Reason(s):</b> ", Reason1, "&nbsp", Reason2,
+                       "<b>Ticket Number:</b> ", FileNum, "<br/>" 
                        )) # Add a Label for Popup
 ```
 

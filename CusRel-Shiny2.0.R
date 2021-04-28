@@ -50,12 +50,19 @@ ui <- dashboardPage(
       h4(textOutput("filteredRowsText", inline = TRUE)),
       # column(width = 12, align = "center", actionButton("refreshCoC", "Refresh Communities of Concern Map")),
       width = 380, 
-      column(width = 12, align = "center", sliderInput(inputId = "date",
-                  label = "Complaint Date",
-                  min = min(cus_rel_data$ReceivedDate),
-                  max = max(cus_rel_data$ReceivedDate),
-                  value = c(min(cus_rel_data$ReceivedDate),max(cus_rel_data$ReceivedDate)),
-                  dragRange = TRUE
+      #column(width = 12, align = "center", sliderInput(inputId = "date",
+                  #label = "Complaint Date",
+                  #min = min(cus_rel_data$ReceivedDate),
+                  #max = max(cus_rel_data$ReceivedDate),
+                  #value = c(min(cus_rel_data$ReceivedDate),max(cus_rel_data$ReceivedDate)),
+                  #dragRange = TRUE
+      #)),
+      column(width = 12, align = "center", dateRangeInput(inputId = "date", 
+                label = "Complaint Date",
+                start = min(cus_rel_data$ReceivedDate),
+                end = max(cus_rel_data$ReceivedDate),
+                min = min(cus_rel_data$ReceivedDate),
+                max = max(cus_rel_data$ReceivedDate)
       )),
       checkboxGroupButtons(inputId = "priorities", label = "Priority", justified = TRUE, 
                            selected = c("Normal", "High"),
@@ -67,6 +74,12 @@ ui <- dashboardPage(
                          selected = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11"), 
                          choiceNames = c("WEB", "Phone", "Social Media", "Email", "Operations", "Board of Directors","Letter","App","Walk-In","511"), 
                          choiceValues = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11")),
+      checkboxGroupInput(inputId = "title_vi", label = "Title VI", inline = TRUE, 
+                           selected = c("Y", "N"),
+                           choices = c("Y", "N")),
+      checkboxGroupInput(inputId = "ada", label = "ADA Complaints", inline = TRUE, 
+                           selected = c("Y", "N"),
+                           choices = c("Y", "N")),
       pickerInput(inputId = "cities", label = "Incident City", width = "350px", 
                   choices = sort(unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE)),
                   selected = unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE),
@@ -113,9 +126,15 @@ ui <- dashboardPage(
 # Define server logic
 server <- function(input, output){
   # Leaflet color palettes
-  colors <- c("#00a65a", "#dd4b39")
-  levels <- c("Normal", "High")
-  priority_palette <- colorFactor(colors, levels = levels)
+  #colors <- c("#00a65a", "#dd4b39")
+  #levels <- c("Normal", "High")
+  #priority_palette <- colorFactor(colors, levels = levels)
+  
+  contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
+  contact_source_labels <- c("WEB", "Phone", "Social Media", "Email", "Board of Directors", "Letter", "Operations", "App", "Walk In", "Five11")
+  contact_source_palette <- colorFactor(palette="Set3", domain=contact_sources)
+  color_list <- contact_source_palette(contact_sources)
+  
   coc_palette <- colorNumeric(c("white", "#db1a02"), domain = c(0, 1))
   # Heatmap hover labels
   Labels <- str_c("<b>Complaints:</b> ", cus_rel_coc$n) %>% lapply(htmltools::HTML)
@@ -127,13 +146,13 @@ server <- function(input, output){
       leaflet() %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
       addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
-                       fill = TRUE, fillColor = ~priority_palette(Priority), 
+                       fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
                        fillOpacity = 0.6, stroke = TRUE, 
                        radius = 8, 
-                       color = "#000", weight = 4, opacity = 0.1, 
+                       color = "#000", weight = 4, opacity = 0.1,
                        popup = ~Label,
                        group = "circlemarkers") %>%
-      addLegend("bottomright", colors = colors, labels = levels, title = "Priority")
+      addLegend("bottomright", colors = color_list, labels = contact_source_labels, title = "Contact Source")
   })
   # CoC Heat Map
   output$CoC_map <- renderLeaflet({
@@ -162,7 +181,9 @@ server <- function(input, output){
            ForAction %in% input$department, 
            Reason1 %in% input$reasons | Reason2 %in% input$reasons,
            between(ReceivedDate, input$date[1], input$date[2]),
-           ContactSource %in% input$contact)
+           ContactSource %in% input$contact,
+           TitleVI %in% input$title_vi,
+           ADAComplaint %in% input$ada)
   )
   # Update Map and filteredRowsText After Options are Changed
   observeEvent(filtered_data(), {
@@ -170,7 +191,7 @@ server <- function(input, output){
       clearGroup("circlemarkers") %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
       addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
-                       fill = TRUE, fillColor = ~priority_palette(Priority), 
+                       fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
                        fillOpacity = 0.6, stroke = TRUE, 
                        radius = 8, 
                        color = "#000", weight = 4, opacity = 0.1, 
