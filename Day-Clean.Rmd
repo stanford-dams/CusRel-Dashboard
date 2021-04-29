@@ -31,3 +31,7 @@ cleaned_data <- cleaned_data %>%
 write_csv(cleaned_data, paste(WORKING_DIR, "/Clean-CusRel-data.csv", sep=""))
 ```
 
+```{r}
+write.csv(cleaned_data, "/Users/cynthiachen/Desktop/School stuff/DAMS/CusRel-dashboard/Clean-CusRel-data.csv")
+```
+
