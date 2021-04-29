@@ -1,0 +1,33 @@
+---
+title: "Clean-Data.Rmd"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(lubridate)
+WORKING_DIR <- "C:\\Users\\lucyc\\Documents\\CusRel-Dashboard-main"
+```
+
+
+```{r}
+Clean-CusRel-data.csv <- cleaned_data
+```
+
+
+```{r}
+# Create day of the week column
+cleaned_data <- cleaned_data %>%
+  mutate(ReceivedDateDay =wday(ReceivedDate, label=TRUE, abbr =FALSE))
+```
+
+
+```{r}
+# Write out
+write_csv(cleaned_data, paste(WORKING_DIR, "/Clean-CusRel-data.csv", sep=""))
+```
+

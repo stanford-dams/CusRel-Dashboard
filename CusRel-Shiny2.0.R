@@ -10,6 +10,7 @@ library(ggmap)
 library(tmaptools)
 library(shinydashboard)
 library(DT)
+library(lubridate)
 
 select <- dplyr::select
 
@@ -19,6 +20,7 @@ cus_rel_data <- read_csv("Clean-CusRel-data.csv") %>%
          ResolvedDateTime=as.character(ResolvedDateTime),
          IncidentDateTime=as.character(IncidentDateTime),
          updatedOn=as.character(updatedOn))
+
 
 # Get bbox of entire dataset
 min_lon <- min(cus_rel_data$Longitude)
@@ -75,6 +77,10 @@ ui <- dashboardPage(
              checkboxGroupButtons(inputId = "priorities", label = "Priority", justified = TRUE, 
                            selected = c("Normal", "High"),
                            choices = c("Normal", "High")),
+             checkboxGroupButtons(inputId = "receiveddateday", label = "Day of the Week", justified = TRUE, 
+                                  selected = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"),
+                                  choiceNames = c("Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"), 
+                                  choiceValues = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")),
              checkboxGroupButtons(inputId = "respondVia", label = "Respond Via", justified = TRUE, 
                          selected = c("App", "Email", "Letter", "Phone", "None"), 
                          choices = c("App", "Email", "Letter", "Phone", "None")),
@@ -211,6 +217,7 @@ server <- function(input, output){
   filtered_data <- reactive(
     filter(cus_rel_data, 
            Priority %in% input$priorities,
+           ReceivedDateDay %in% input$receiveddateday,
            IncidentCity %in% input$cities, 
            Route %in% input$routes,
            RespondVia %in% input$respondVia, 
