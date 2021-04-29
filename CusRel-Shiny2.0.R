@@ -53,9 +53,9 @@ ui <- dashboardPage(
                   titleWidth = 380), 
   
   dashboardSidebar(
-      h4(textOutput("filteredRowsText", inline = TRUE)),
-      # column(width = 12, align = "center", actionButton("refreshCoC", "Refresh Communities of Concern Map")),
+      fluidRow(column(width = 12, align = "center", h4(textOutput("filteredRowsText", inline = TRUE)))),
       width = 380, 
+      # Old Time Input
       #column(width = 12, align = "center", sliderInput(inputId = "date",
                   #label = "Complaint Date",
                   #min = min(cus_rel_data$ReceivedDate),
@@ -63,29 +63,38 @@ ui <- dashboardPage(
                   #value = c(min(cus_rel_data$ReceivedDate),max(cus_rel_data$ReceivedDate)),
                   #dragRange = TRUE
       #)),
-      column(width = 12, align = "center", dateRangeInput(inputId = "date", 
+      column(width = 12, align = "center",
+             
+             dateRangeInput(inputId = "date", 
                 label = "Complaint Date",
                 start = min(cus_rel_data$ReceivedDate),
                 end = max(cus_rel_data$ReceivedDate),
                 min = min(cus_rel_data$ReceivedDate),
-                max = max(cus_rel_data$ReceivedDate)
-      )),
-      checkboxGroupButtons(inputId = "priorities", label = "Priority", justified = TRUE, 
+                max = max(cus_rel_data$ReceivedDate)),
+             
+             checkboxGroupButtons(inputId = "priorities", label = "Priority", justified = TRUE, 
                            selected = c("Normal", "High"),
                            choices = c("Normal", "High")),
-      checkboxGroupButtons(inputId = "respondVia", label = "Respond Via", justified = TRUE, 
+             checkboxGroupButtons(inputId = "respondVia", label = "Respond Via", justified = TRUE, 
                          selected = c("App", "Email", "Letter", "Phone", "None"), 
                          choices = c("App", "Email", "Letter", "Phone", "None")),
-      checkboxGroupInput(inputId = "contact", label = "Contact Source", inline = TRUE, 
+             checkboxGroupInput(inputId = "contact", label = "Contact Source", inline = TRUE, 
                          selected = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11"), 
                          choiceNames = c("WEB", "Phone", "Social Media", "Email", "Operations", "Board of Directors","Letter","App","Walk-In","511"), 
-                         choiceValues = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11")),
-      checkboxGroupInput(inputId = "title_vi", label = "Title VI", inline = TRUE, 
-                           selected = c("Y", "N"),
-                           choices = c("Y", "N")),
-      checkboxGroupInput(inputId = "ada", label = "ADA Complaints", inline = TRUE, 
-                           selected = c("Y", "N"),
-                           choices = c("Y", "N")),
+                         choiceValues = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11"))
+      ),
+      
+      fluidRow(
+        column(width = 6, align = "center",
+               checkboxGroupInput(inputId = "title_vi", label = "Title VI", inline = TRUE, 
+                             selected = c("Y", "N"),
+                             choices = c("Y", "N"))),
+        column(width = 5, align = "center", 
+               checkboxGroupInput(inputId = "ada", label = "ADA Complaints", inline = TRUE, 
+                             selected = c("Y", "N"),
+                             choices = c("Y", "N")))
+      ),
+      
       pickerInput(inputId = "cities", label = "Incident City", width = "350px", 
                   choices = sort(unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE)),
                   selected = unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE),
