@@ -55,7 +55,8 @@ ui <- dashboardPage(
                   titleWidth = 380), 
   
   dashboardSidebar(
-      fluidRow(column(width = 12, align = "center", h4(textOutput("filteredRowsText", inline = TRUE)))),
+      fluidRow(column(width = 12, align = "center", style="padding-top: 12px;", 
+                      h4(textOutput("filteredRowsText", inline = TRUE)))),
       width = 380,
       # Old Time Input
       #column(width = 12, align = "center", sliderInput(inputId = "date",
@@ -178,7 +179,7 @@ server <- function(input, output){
     cus_rel_data %>%
       leaflet() %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
-      addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
+      addCircleMarkers(lat = ~jitter(Latitude, factor = 6), lng = ~jitter(Longitude, factor = 6), 
                        fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
                        fillOpacity = 0.6, stroke = TRUE, 
                        radius = 8, 
@@ -237,7 +238,7 @@ server <- function(input, output){
     proxy <- leafletProxy("point_map", data = filtered_data()) %>%
       clearGroup("circlemarkers") %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
-      addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
+      addCircleMarkers(lat = ~jitter(Latitude, factor = 6), lng = ~jitter(Longitude, factor = 6), 
                        fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
                        fillOpacity = 0.6, stroke = TRUE, 
                        radius = 8, 
