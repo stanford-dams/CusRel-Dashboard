@@ -20,6 +20,12 @@ cus_rel_data <- read_csv("Clean-CusRel-data.csv") %>%
          IncidentDateTime=as.character(IncidentDateTime),
          updatedOn=as.character(updatedOn))
 
+# Get bbox of entire dataset
+min_lon <- min(cus_rel_data$Longitude)
+max_lon <- max(cus_rel_data$Longitude)
+min_lat <- min(cus_rel_data$Latitude)
+max_lat <- max(cus_rel_data$Latitude)
+
 coc_data <- st_read("./CoC_2020")
 st_crs(coc_data) <- 4326
 cus_rel_sf <- st_as_sf(cus_rel_data, coords = c("Longitude", "Latitude"))
@@ -138,8 +144,17 @@ server <- function(input, output){
   coc_palette <- colorNumeric(c("white", "#db1a02"), domain = c(0, 1))
   # Heatmap hover labels
   Labels <- str_c("<b>Complaints:</b> ", cus_rel_coc$n) %>% lapply(htmltools::HTML)
+  
+  # Initialize bbox
+  rect_bbox <- reactiveValues(
+    xmin=min_lon, 
+    xmax=max_lon,
+    ymin=min_lat,
+    ymax=max_lat)
+  
   # Filtered rows text
   filteredRowsText <- reactiveVal(paste("Selected", nrow(cus_rel_data), "of", nrow(cus_rel_data), "complaints"))
+  
   # Map Output
   output$point_map <- renderLeaflet({
     cus_rel_data %>%
@@ -152,8 +167,16 @@ server <- function(input, output){
                        color = "#000", weight = 4, opacity = 0.1,
                        popup = ~Label,
                        group = "circlemarkers") %>%
+      addDrawToolbar(polylineOptions=F, 
+                     circleOptions=F, 
+                     markerOptions=F, 
+                     circleMarkerOptions=F, 
+                     singleFeature=T, 
+                     rectangleOptions=drawRectangleOptions(showArea=FALSE, repeatMode=TRUE),
+                     editOptions=editToolbarOptions(remove=TRUE)) %>%
       addLegend("bottomright", colors = color_list, labels = contact_source_labels, title = "Contact Source")
   })
+  
   # CoC Heat Map
   output$CoC_map <- renderLeaflet({
     cus_rel_coc %>% 
@@ -171,6 +194,7 @@ server <- function(input, output){
                 values = c(0, 1), bins = c(0.00, 0.25, 0.50, 0.75, 1.00), 
                 title = "Relative<br/>Complaint<br/>Density")
   })
+  
   # Filter Data Reactively without Shifting Map
   filtered_data <- reactive(
     filter(cus_rel_data, 
@@ -183,7 +207,11 @@ server <- function(input, output){
            between(ReceivedDate, input$date[1], input$date[2]),
            ContactSource %in% input$contact,
            TitleVI %in% input$title_vi,
-           ADAComplaint %in% input$ada)
+           ADAComplaint %in% input$ada,
+           Longitude >= rect_bbox$xmin,
+           Longitude <= rect_bbox$xmax,
+           Latitude >= rect_bbox$ymin,
+           Latitude <= rect_bbox$ymax)
   )
   # Update Map and filteredRowsText After Options are Changed
   observeEvent(filtered_data(), {
@@ -198,7 +226,30 @@ server <- function(input, output){
                        popup = ~Label,
                        group = "circlemarkers")
       filteredRowsText(paste("Selected", nrow(filtered_data()), "of", nrow(cus_rel_data), "complaints"))
-  }) 
+  })
+  
+  # Update map when user updates rectangle from drawToolba
+  observeEvent(input$point_map_draw_all_features, {
+    features <- input$point_map_draw_all_features$features
+    # No features found (e.g. user deleted shapes)
+    if (length(features) == 0){
+      rect_bbox$xmin <- min_lon
+      rect_bbox$xmax <- max_lon
+      rect_bbox$ymin <- min_lat
+      rect_bbox$ymax <- max_lat
+    } else {
+      feat <- features[[1]] # we only allow one feature at time in drawtoolbar
+      coords <- unlist(feat$geometry$coordinates)
+      coords <- matrix(coords, ncol = 2, byrow = T)
+      poly <- st_sf(st_sfc(st_polygon(list(coords))), crs = 4326)
+      bbox <- st_bbox(poly)
+      rect_bbox$xmin <- bbox$xmin
+      rect_bbox$xmax <- bbox$xmax
+      rect_bbox$ymin <- bbox$ymin
+      rect_bbox$ymax <- bbox$ymax
+    }
+  })
+  
   observeEvent(input$refreshCoC, {
     # Create new CoC Data
     cus_rel_sf <- st_as_sf(filtered_data(), coords = c("Longitude", "Latitude"))
@@ -228,6 +279,7 @@ server <- function(input, output){
                   popup = ~Popup, 
                   group = "coc_polygons")
   })
+  
   # Number of Complaints Shown
   output$filteredRowsText <- renderText({
     filteredRowsText()
