@@ -14,24 +14,34 @@ library(lubridate)
 
 select <- dplyr::select
 
-# Read in data, getting rid of time zone attribute
+# Read in cusrel data, getting rid of time zone attribute
 cus_rel_data <- read_csv("Clean-CusRel-data.csv") %>%
   mutate(ReceivedDateTime=as.character(ReceivedDateTime),
          ResolvedDateTime=as.character(ResolvedDateTime),
          IncidentDateTime=as.character(IncidentDateTime),
          updatedOn=as.character(updatedOn))
-
+  
+# Convert cusrel data to sf
+cus_rel_sf <- st_as_sf(cus_rel_data, coords = c("Longitude", "Latitude"),
+                       remove=FALSE)
+st_crs(cus_rel_sf) <- 4326
 
 # Get bbox of entire dataset
-min_lon <- min(cus_rel_data$Longitude)
-max_lon <- max(cus_rel_data$Longitude)
-min_lat <- min(cus_rel_data$Latitude)
-max_lat <- max(cus_rel_data$Latitude)
+min_lon <- st_bbox(cus_rel_sf)$xmin-0.01
+max_lon <- st_bbox(cus_rel_sf)$xmax+0.01
+min_lat <- st_bbox(cus_rel_sf)$ymin-0.01
+max_lat <- st_bbox(cus_rel_sf)$ymax+0.01
+bbox <- st_sfc(st_polygon(list(matrix(c(min_lon, min_lat, 
+                                 max_lon, min_lat, 
+                                 max_lon, max_lat, 
+                                 min_lon, max_lat, 
+                                 min_lon, min_lat), 
+                                 ncol=2, byrow=TRUE))), crs=4326)
 
+# Read in CoC data, convert to SF
 coc_data <- st_read("./CoC_2020")
 st_crs(coc_data) <- 4326
-cus_rel_sf <- st_as_sf(cus_rel_data, coords = c("Longitude", "Latitude"))
-st_crs(cus_rel_sf) <- 4326
+
 # Initial CoC Cus Rel Data
 cus_rel_coc <- st_intersection(coc_data, cus_rel_sf)
 cus_rel_coc <- cus_rel_coc %>%
@@ -164,12 +174,8 @@ server <- function(input, output){
   # Heatmap hover labels
   Labels <- str_c("<b>Complaints:</b> ", cus_rel_coc$n) %>% lapply(htmltools::HTML)
   
-  # Initialize bbox
-  rect_bbox <- reactiveValues(
-    xmin=min_lon, 
-    xmax=max_lon,
-    ymin=min_lat,
-    ymax=max_lat)
+  # Initialize subset polygon to bbox around entire data
+  subset_polygon <- reactiveVal(bbox)
   
   # Filtered rows text
   filteredRowsText <- reactiveVal(paste("Selected", nrow(cus_rel_data), "of", nrow(cus_rel_data), "complaints"))
@@ -216,7 +222,7 @@ server <- function(input, output){
   
   # Filter Data Reactively without Shifting Map
   filtered_data <- reactive(
-    filter(cus_rel_data, 
+    dplyr::filter(cus_rel_sf, 
            Priority %in% input$priorities,
            ReceivedDateDay %in% input$receiveddateday,
            IncidentCity %in% input$cities, 
@@ -228,10 +234,7 @@ server <- function(input, output){
            ContactSource %in% input$contact,
            TitleVI %in% input$title_vi,
            ADAComplaint %in% input$ada,
-           Longitude >= rect_bbox$xmin,
-           Longitude <= rect_bbox$xmax,
-           Latitude >= rect_bbox$ymin,
-           Latitude <= rect_bbox$ymax)
+           st_within(geometry, subset_polygon(), sparse=FALSE))
   )
   # Update Map and filteredRowsText After Options are Changed
   observeEvent(filtered_data(), {
@@ -253,20 +256,13 @@ server <- function(input, output){
     features <- input$point_map_draw_all_features$features
     # No features found (e.g. user deleted shapes)
     if (length(features) == 0){
-      rect_bbox$xmin <- min_lon
-      rect_bbox$xmax <- max_lon
-      rect_bbox$ymin <- min_lat
-      rect_bbox$ymax <- max_lat
+      subset_polygon(bbox)
     } else {
       feat <- features[[1]] # we only allow one feature at time in drawtoolbar
       coords <- unlist(feat$geometry$coordinates)
       coords <- matrix(coords, ncol = 2, byrow = T)
       poly <- st_sf(st_sfc(st_polygon(list(coords))), crs = 4326)
-      bbox <- st_bbox(poly)
-      rect_bbox$xmin <- bbox$xmin
-      rect_bbox$xmax <- bbox$xmax
-      rect_bbox$ymin <- bbox$ymin
-      rect_bbox$ymax <- bbox$ymax
+      subset_polygon(poly)
     }
   })
   
@@ -304,6 +300,7 @@ server <- function(input, output){
   output$filteredRowsText <- renderText({
     filteredRowsText()
   })
+  
   # Display filtered data
   output$dataTable = renderDT(
     datatable(filtered_data()[,names(filtered_data()) != "Label"], 
