@@ -90,7 +90,7 @@ ui <- dashboardPage(
                            choices = c("Normal", "High")),
              checkboxGroupButtons(inputId = "receiveddateday", label = "Day of the Week", justified = TRUE, 
                                   selected = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"),
-                                  choiceNames = c("Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"), 
+                                  choiceNames = c("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"), 
                                   choiceValues = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")),
              checkboxGroupButtons(inputId = "respondVia", label = "Respond Via", justified = TRUE, 
                          selected = c("App", "Email", "Letter", "Phone", "None"), 
