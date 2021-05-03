@@ -10,6 +10,7 @@ library(ggmap)
 library(tmaptools)
 library(shinydashboard)
 library(DT)
+library(lubridate)
 
 select <- dplyr::select
 
@@ -19,6 +20,7 @@ cus_rel_data <- read_csv("Clean-CusRel-data.csv") %>%
          ResolvedDateTime=as.character(ResolvedDateTime),
          IncidentDateTime=as.character(IncidentDateTime),
          updatedOn=as.character(updatedOn))
+
 
 # Get bbox of entire dataset
 min_lon <- min(cus_rel_data$Longitude)
@@ -53,9 +55,10 @@ ui <- dashboardPage(
                   titleWidth = 380), 
   
   dashboardSidebar(
-      h4(textOutput("filteredRowsText", inline = TRUE)),
-      # column(width = 12, align = "center", actionButton("refreshCoC", "Refresh Communities of Concern Map")),
-      width = 380, 
+      fluidRow(column(width = 12, align = "center", style="padding-top: 12px;", 
+                      h4(textOutput("filteredRowsText", inline = TRUE)))),
+      width = 380,
+      # Old Time Input
       #column(width = 12, align = "center", sliderInput(inputId = "date",
                   #label = "Complaint Date",
                   #min = min(cus_rel_data$ReceivedDate),
@@ -63,55 +66,71 @@ ui <- dashboardPage(
                   #value = c(min(cus_rel_data$ReceivedDate),max(cus_rel_data$ReceivedDate)),
                   #dragRange = TRUE
       #)),
-      column(width = 12, align = "center", dateRangeInput(inputId = "date", 
+      fluidRow(column(width = 12, align = "center",
+             
+             dateRangeInput(inputId = "date", 
                 label = "Complaint Date",
                 start = min(cus_rel_data$ReceivedDate),
                 end = max(cus_rel_data$ReceivedDate),
                 min = min(cus_rel_data$ReceivedDate),
-                max = max(cus_rel_data$ReceivedDate)
-      )),
-      checkboxGroupButtons(inputId = "priorities", label = "Priority", justified = TRUE, 
+                max = max(cus_rel_data$ReceivedDate)),
+             
+             checkboxGroupButtons(inputId = "priorities", label = "Priority", justified = TRUE, 
                            selected = c("Normal", "High"),
                            choices = c("Normal", "High")),
-      checkboxGroupButtons(inputId = "respondVia", label = "Respond Via", justified = TRUE, 
+             checkboxGroupButtons(inputId = "receiveddateday", label = "Day of the Week", justified = TRUE, 
+                                  selected = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"),
+                                  choiceNames = c("Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"), 
+                                  choiceValues = c("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")),
+             checkboxGroupButtons(inputId = "respondVia", label = "Respond Via", justified = TRUE, 
                          selected = c("App", "Email", "Letter", "Phone", "None"), 
                          choices = c("App", "Email", "Letter", "Phone", "None")),
-      checkboxGroupInput(inputId = "contact", label = "Contact Source", inline = TRUE, 
+             checkboxGroupInput(inputId = "contact", label = "Contact Source", inline = TRUE, 
                          selected = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11"), 
                          choiceNames = c("WEB", "Phone", "Social Media", "Email", "Operations", "Board of Directors","Letter","App","Walk-In","511"), 
-                         choiceValues = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11")),
-      checkboxGroupInput(inputId = "title_vi", label = "Title VI", inline = TRUE, 
-                           selected = c("Y", "N"),
-                           choices = c("Y", "N")),
-      checkboxGroupInput(inputId = "ada", label = "ADA Complaints", inline = TRUE, 
-                           selected = c("Y", "N"),
-                           choices = c("Y", "N")),
-      pickerInput(inputId = "cities", label = "Incident City", width = "350px", 
-                  choices = sort(unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE)),
-                  selected = unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE),
-                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Cities', 'live-search-placeholder' = 'Search for Cities', 'selected-text-format' = 'count > 3', 'size' = 5),
-                  multiple = TRUE),
-      pickerInput(inputId = "routes", label = "Route", width = "350px", 
-                  choices = cus_rel_data %>% pull(Route) %>% unique(), 
-                  selected = cus_rel_data %>% pull(Route) %>% unique(),
-                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Routes', 'live-search-placeholder' = 'Search for Routes', 'selected-text-format' = 'count > 3', 'size' = 5),
-                  multiple = TRUE),
-      pickerInput(inputId = "reasons", label = "Complaint Reason", width = "350px", 
-                  choices = sort(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique),
-                  selected = sort(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique),
-                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Reasons', 'live-search-placeholder' = 'Search for Reasons', 'selected-text-format' = 'count > 3', 'size' = 5), 
-                  multiple = TRUE),
-      pickerInput(inputId = "department", label = "Department", width = "350px", 
-                  choices = sort(unique(cus_rel_data$ForAction)), 
-                  selected = sort(unique(cus_rel_data$ForAction)),
-                  options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Departments', 'live-search-placeholder' = 'Search for Departments', 'selected-text-format' = 'count > 3', 'size' = 5),
-                  multiple = TRUE)
+                         choiceValues = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11"))
+      )),
+      
+      fluidRow(
+        column(width = 6, align = "center",
+               checkboxGroupInput(inputId = "title_vi", label = "Title VI", inline = TRUE, 
+                             selected = c("Y", "N"),
+                             choices = c("Y", "N"))),
+        column(width = 5, align = "center", 
+               checkboxGroupInput(inputId = "ada", label = "ADA Complaints", inline = TRUE, 
+                             selected = c("Y", "N"),
+                             choices = c("Y", "N")))
+      ),
+      
+      fluidRow(column(width = 12, 
+        pickerInput(inputId = "cities", label = "Incident City", width = "100%", 
+                    choices = sort(unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE)),
+                    selected = unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE),
+                    options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Cities', 'live-search-placeholder' = 'Search for Cities', 'selected-text-format' = 'count > 3', 'size' = 5),
+                    multiple = TRUE),
+        pickerInput(inputId = "routes", label = "Route", width = "100%", 
+                    choices = cus_rel_data %>% pull(Route) %>% unique(), 
+                    selected = cus_rel_data %>% pull(Route) %>% unique(),
+                    options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Routes', 'live-search-placeholder' = 'Search for Routes', 'selected-text-format' = 'count > 3', 'size' = 5),
+                    multiple = TRUE),
+        pickerInput(inputId = "reasons", label = "Complaint Reason", width = "100%", 
+                    choices = sort(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique),
+                    selected = sort(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique),
+                    options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Reasons', 'live-search-placeholder' = 'Search for Reasons', 'selected-text-format' = 'count > 3', 'size' = 5), 
+                    multiple = TRUE),
+        pickerInput(inputId = "department", label = "Department", width = "100%", 
+                    choices = sort(unique(cus_rel_data$ForAction)), 
+                    selected = sort(unique(cus_rel_data$ForAction)),
+                    options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Departments', 'live-search-placeholder' = 'Search for Departments', 'selected-text-format' = 'count > 3', 'size' = 5),
+                    multiple = TRUE)
+      ))
     ),
   
     # Show a plot of the generated distribution
     dashboardBody(
       tags$head(
-        tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
+        tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"), 
+        tags$style(HTML(".sidebar {height: 93.5vh; overflow-y: auto; overflow-x: hidden;}")) # Sidebar scroll bar
       ),
       fluidRow(
         tabBox(id = "tabset1", width = 12, 
@@ -160,7 +179,7 @@ server <- function(input, output){
     cus_rel_data %>%
       leaflet() %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
-      addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
+      addCircleMarkers(lat = ~jitter(Latitude, factor = 6), lng = ~jitter(Longitude, factor = 6), 
                        fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
                        fillOpacity = 0.6, stroke = TRUE, 
                        radius = 8, 
@@ -199,6 +218,7 @@ server <- function(input, output){
   filtered_data <- reactive(
     filter(cus_rel_data, 
            Priority %in% input$priorities,
+           ReceivedDateDay %in% input$receiveddateday,
            IncidentCity %in% input$cities, 
            Route %in% input$routes,
            RespondVia %in% input$respondVia, 
@@ -218,7 +238,7 @@ server <- function(input, output){
     proxy <- leafletProxy("point_map", data = filtered_data()) %>%
       clearGroup("circlemarkers") %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
-      addCircleMarkers(lat = ~Latitude, lng = ~Longitude, 
+      addCircleMarkers(lat = ~jitter(Latitude, factor = 6), lng = ~jitter(Longitude, factor = 6), 
                        fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
                        fillOpacity = 0.6, stroke = TRUE, 
                        radius = 8, 
