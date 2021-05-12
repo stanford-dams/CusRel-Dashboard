@@ -1,3 +1,4 @@
+/* Fonts */
 .main-header .logo {
     font-family: "Calibri", "Arial";
     font-weight: bold;
@@ -6,10 +7,26 @@
 h1, h2, h3, h4, h5, h6, p {
     font-family: "Calibri", "Arial";
 }
+/* Tabs */
 .nav-tabs-custom .nav-tabs li.active {
     border-top-color: #00a65a;
 }
+/* Main Map */
 .legend svg text {
     font-size: 13px;
     font-family: "Calibri", "Arial";
+}
+/* Sidebar */
+.btn-default.active {
+    color: #000;
+    background-color: #c5c5c5;
+}
+.btn-default.active:hover {
+    background-color: #fff;
+    border-color: #cdcdcd;
+}
+.sidebar {
+    height: 93.5vh;
+    overflow-y: auto;
+    overflow-x: hidden;
 }

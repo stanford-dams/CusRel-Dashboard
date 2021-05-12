@@ -139,8 +139,7 @@ ui <- dashboardPage(
     # Show a plot of the generated distribution
     dashboardBody(
       tags$head(
-        tags$link(rel = "stylesheet", type = "text/css", href = "styles.css"), 
-        tags$style(HTML(".sidebar {height: 93.5vh; overflow-y: auto; overflow-x: hidden;}")) # Sidebar scroll bar
+        tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
       ),
       fluidRow(
         tabBox(id = "tabset1", width = 12, 

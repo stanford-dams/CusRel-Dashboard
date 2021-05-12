@@ -1,0 +1,12 @@
+name: CusRel-Dashboard
+title: CusRel-Dashboard
+username:
+account: bkenery
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3900689
+bundleId: 4548578
+url: https://bkenery.shinyapps.io/CusRel-Dashboard/
+when: 1620014885.91295
+asMultiple: FALSE
+asStatic: FALSE
