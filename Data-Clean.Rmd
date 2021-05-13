@@ -11,6 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readr)
 library(gtools)
+library(tmaptools)
+library(lubridate)
 WORKING_DIR <- "/Users/harrisonli/Documents/iCloud_Documents/Stanford/DAMS/AC_Transit/CusRel-Dashboard"
 ```
 
@@ -29,16 +31,71 @@ stops <- raw_stops %>%
 
 
 ```{r}
-# Add lat/lon columns
-cleaned_data <- raw_data %>% 
-  dplyr::filter(across(Location, ~grepl(pattern=".*\\(\\d\\d\\d\\d\\d\\)$",.))) %>%
-  mutate(StopId=substr(Location, nchar(Location)-5, nchar(Location)-1)) %>%
-  left_join(stops, by="StopId") %>% # add lat lon to table based on stops data
-  tidyr::separate(Reasons, into = c("Reason1", "Reason2"), sep = ";", fill = "right", extra = "drop") %>%
-  filter(!is.na(Longitude) & !is.na(Latitude))
+# Add City, if known, else add ", CA USA" to location
+raw_data <- raw_data %>%
+  mutate(Location = if_else(substr(Location, nchar(Location)-3, nchar(Location)) == " USA", 
+                            substr(Location, 1, nchar(Location)-4), Location), # get rid of USA in addresses
+         Location = if_else(str_detect(Location, "#"), "NA", Location),
+         GeocodeExtras = if_else(IncidentCity=="NULL", "CA USA", IncidentCity)) %>% 
+  unite(col=GeocodeLocation, Location, GeocodeExtras, sep=" ", remove=FALSE)
+
+```
+
+
+```{r}
+# Try geocoding locations, working by chunk
+# raw_geocodes <- list()
+# chunk_size <- 100
+# for (i in 109:ceiling(nrow(raw_data)/chunk_size)){
+  # cat(chunk_size*(i-1)+1, "\n")
+  # raw_geocodes[[i]] <- geocode_OSM(raw_data$GeocodeLocation[(chunk_size*(i-1)+1):(min(chunk_size*i, nrow(raw_data)))], keep.unfound=TRUE)
+# }
+# raw_geocodes <- do.call("rbind", raw_geocodes)
 ```
 
 ```{r}
+# Save raw geocodes so we don't have to run again from scratch
+# write_csv(x=raw_geocodes, file=paste(WORKING_DIR, "/Raw-Geocodes.csv", sep=""))
+```
+
+```{r}
+raw_geocodes <- read.csv(paste(WORKING_DIR, "/Raw-Geocodes.csv", sep=""))
+```
+
+```{r}
+# Filter out geocodes not in within bbox of stops
+xmin <- min(stops$Longitude)
+xmax <- max(stops$Longitude)
+ymin <- min(stops$Latitude)
+ymax <- max(stops$Latitude)
+geocodes <- raw_geocodes %>%
+  mutate(Longitude=ifelse((lon >= xmin & lon <= xmax & lat >= ymin & lat <= ymax),
+                            lon, NA),
+         Latitude=ifelse((lon >= xmin & lon <= xmax & lat >= ymin & lat <= ymax),
+                            lat, NA))
+```
+
+```{r}
+# Get lat/lon from stop ID's, if we can
+stop_lon_lat <- raw_data %>% 
+  mutate(StopId=ifelse(grepl(pattern=".*\\(\\d\\d\\d\\d\\d\\)$", x=Location), 
+                       substr(Location, nchar(Location)-5, nchar(Location)-1), 
+                       NA)) %>%
+  left_join(stops, by="StopId") # add lat lon to table based on stops data
+```
+
+```{r}
+# Generate lat/lon columns, prioritizing those from stop ID's, ignoring those for which
+cleaned_data <- raw_data %>%
+  mutate(Longitude=if_else(is.na(stop_lon_lat$Longitude), geocodes$Longitude, stop_lon_lat$Longitude),
+         Latitude=if_else(is.na(stop_lon_lat$Latitude), geocodes$Latitude, stop_lon_lat$Latitude)) %>%
+  tidyr::separate(Reasons, into = c("Reason1", "Reason2"), sep = ";", fill = "right", extra = "drop") %>%
+  dplyr::filter(!is.na(Longitude) & !is.na(Latitude))
+```
+
+
+```{r}
+# Put in Pacific Time Zone, add day of week
 cleaned_data <- cleaned_data %>%
   mutate(ReceivedDateTime=as.POSIXlt(as.character(ReceivedDateTime), tz="PST8PDT"),
          ResolvedDateTime=as.POSIXlt(as.character(ResolvedDateTime), tz="PST8PDT"),
@@ -47,12 +104,12 @@ cleaned_data <- cleaned_data %>%
 ```
 
 
-
 ```{r}
-# Add Resolve Time, Incident + Receive Date; Create Label for Popup
+# Add Resolve Time, Incident + Receivde Date; Create Label for Popup
 cleaned_data <- cleaned_data %>% 
   mutate(ResolveTime = round(as.numeric(difftime(as.POSIXct(ResolvedDateTime), as.POSIXct(ReceivedDateTime), units = "days"))), 
-         ReceivedDate = as.Date(ReceivedDateTime, "%m/%d/%y", tz="PST8PDT"), 
+         ReceivedDate = as.Date(ReceivedDateTime, "%m/%d/%y", tz="PST8PDT"),
+         ReceivedDateDay=wday(ReceivedDate, label=TRUE, abbr=FALSE),
          IncidentDate = as.Date(IncidentDateTime, "%m/%d/%y", tz="PST8PDT"), 
          Route = toupper(Route)) %>% 
   mutate(Label = str_c("<b>Received Date:</b> ", ReceivedDate, "<br/>",
@@ -99,7 +156,7 @@ write_csv(cleaned_data, paste(WORKING_DIR, "/Clean-CusRel-data.csv", sep=""))
 
 ```{r}
 # Write out (4/28 edits)
-write.csv(cleaned_data, "/Users/cynthiachen/Desktop/School stuff/DAMS/CusRel-dashboard/Clean-CusRel-data.csv")
+# write.csv(cleaned_data, "/Users/cynthiachen/Desktop/School stuff/DAMS/CusRel-dashboard/Clean-CusRel-data.csv")
 ```
 
 

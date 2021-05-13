@@ -15,7 +15,7 @@ library(lubridate)
 select <- dplyr::select
 
 # Read in cusrel data, getting rid of time zone attribute
-cus_rel_data <- read_csv("Clean-CusRel-data.csv") %>%
+cus_rel_data <- read_csv("Clean-CusRel-data.csv", na="") %>%
   mutate(ReceivedDateTime=as.character(ReceivedDateTime),
          ResolvedDateTime=as.character(ResolvedDateTime),
          IncidentDateTime=as.character(IncidentDateTime),
