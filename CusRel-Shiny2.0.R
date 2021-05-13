@@ -1,5 +1,6 @@
 library(shiny)
 library(shinyWidgets)
+library(shinycssloaders)
 library(tidyverse)
 library(htmltools)
 library(sp)
@@ -149,11 +150,18 @@ ui <- dashboardPage(
       ),
       fluidRow(
         tabBox(id = "tabset1", width = 12, 
-          tabPanel("Stops Map", leafletOutput("point_map", height = "600px")), 
+          tabPanel("Stops Map", 
+                   withSpinner(leafletOutput("point_map", height = "600px"), 
+                               type = getOption("spinner.type", 6), 
+                               color = getOption("spinner.color", "#00a65a"),
+                               hide.ui = FALSE)), 
           tabPanel("Communities of Concern Map", 
                    fluidRow(column(width = 12,
                      absolutePanel(actionButton("refreshCoC", "Refresh Map", icon = icon("sync-alt")), right = "20px", top = "5px", style = "z-index: 1;"),
-                     leafletOutput("CoC_map", height = "600px")))), 
+                     withSpinner(leafletOutput("CoC_map", height = "600px"), 
+                                 type = getOption("spinner.type", 6), 
+                                 color = getOption("spinner.color", "#00a65a"),
+                                 hide.ui = FALSE)))), 
           tabPanel("Raw Data", 
                    DTOutput("dataTable"), 
                    downloadButton("downloadCSV", "Download as CSV")
