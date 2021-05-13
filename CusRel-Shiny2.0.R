@@ -53,7 +53,13 @@ cus_rel_coc <- cus_rel_coc %>%
          Opacity = n/ifelse(max(n) == 0, 1, max(n)), 
          Popup = str_c("<b>Tract:</b> ", tract, "&nbsp;&nbsp", "<b>Population:</b> ", tot_pop,  "<br/>", 
                        "<b># of Complaints: </b>", n, "<br/>", 
-                       "<b>CoC Class:</b> ", coc_class)
+                       "<b>CoC Class:</b> ", coc_class, "<br/>", 
+                       "<b>% Low Income:</b> ", round(pct_below2*10, 2), "<br/>", 
+                       "<b>% Minority:</b> ", round(pct_minori*10, 2), "<br/>", 
+                       "<b>% Disabled:</b> ", round(pct_disab*10, 2), "<br/>", 
+                       "<b>% Over 75:</b> ", round(pct_over75*10, 2), "<br/>", 
+                       "<b>% 0-Vehicle Household:</b> ", round(pct_zvhhs*10, 2), "<br/>", 
+                       "<b>% Single Parent Family:</b> ", round(pct_spfam*10, 2))
   )
 
 # Define UI
@@ -279,7 +285,13 @@ server <- function(input, output){
              Opacity = n/ifelse(max(n) == 0, 1, max(n)), 
              Popup = str_c("<b>Tract:</b> ", tract, "&nbsp;&nbsp", "<b>Population:</b> ", tot_pop,  "<br/>", 
                            "<b># of Complaints: </b>", n, "<br/>", 
-                           "<b>CoC Class:</b> ", coc_class)
+                           "<b>CoC Class:</b> ", coc_class, "<br/>", 
+                           "<b>% Low Income:</b> ", round(pct_below2*10, 2), "<br/>", 
+                           "<b>% Minority:</b> ", round(pct_minori*10, 2), "<br/>", 
+                           "<b>% Disabled:</b> ", round(pct_disab*10, 2), "<br/>", 
+                           "<b>% Over 75:</b> ", round(pct_over75*10, 2), "<br/>", 
+                           "<b>% 0-Vehicle Household:</b> ", round(pct_zvhhs*10, 2), "<br/>", 
+                           "<b>% Single Parent Family:</b> ", round(pct_spfam*10, 2))
       )
     Labels <- str_c("<b>Complaints:</b> ", cus_rel_coc$n) %>% lapply(htmltools::HTML)
     proxy_coc <- leafletProxy("CoC_map", data = cus_rel_coc) %>% 
