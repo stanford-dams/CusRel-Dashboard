@@ -165,15 +165,19 @@ ui <- dashboardPage(
                      h5(tags$a(href="https://opendata.mtc.ca.gov/datasets/28a03a46fe9c4df0a29746d6f8c633c8_0", "More About the Communities of Concern Data Set"))))), 
           tabPanel("Graphs", 
                    fluidRow(
-                     column(width = 4, 
-                            box(width = 16, "Insert Independent Variable Selector Here")), 
-                     column(width = 12)
+                     column(width = 3, 
+                            box(width = 12, 
+                                prettyRadioButtons(inputId = "graph_var", label = "Select an Independent Variable: ", 
+                                                   choices = c("Bus Route", "Complaint Reason", "Contact Source", "Incident City")))), 
+                     column(width = 9)
                    )), 
           tabPanel("Tables", 
                    fluidRow(
-                     column(width = 4, 
-                            box(width = 16, "Insert Independent Variable Selector Here")), 
-                     column(width = 12)
+                     column(width = 3, 
+                            box(width = 12, 
+                                prettyRadioButtons(inputId = "table_var", label = "Select an Independent Variable: ", 
+                                                   choices = c("Bus Route", "Complaint Reason", "Contact Source", "Incident City")))), 
+                     column(width = 9)
                    )), 
           tabPanel("Raw Data", 
                    DTOutput("dataTable"), 
