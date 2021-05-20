@@ -161,7 +161,8 @@ ui <- dashboardPage(
                      withSpinner(leafletOutput("CoC_map", height = "600px"), 
                                  type = getOption("spinner.type", 6), 
                                  color = getOption("spinner.color", "#00a65a"),
-                                 hide.ui = FALSE)))), 
+                                 hide.ui = FALSE),
+                     h4(tags$a(href="https://opendata.mtc.ca.gov/datasets/28a03a46fe9c4df0a29746d6f8c633c8_0", "More About the Communities of Concern Data Set"))))), 
           tabPanel("Raw Data", 
                    DTOutput("dataTable"), 
                    downloadButton("downloadCSV", "Download as CSV")

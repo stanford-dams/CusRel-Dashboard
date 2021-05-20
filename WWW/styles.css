@@ -1,4 +1,4 @@
-/* Fonts */
+/* ----- Fonts ----- */
 .main-header .logo {
     font-family: "Calibri", "Arial";
     font-weight: bold;
@@ -7,16 +7,16 @@
 h1, h2, h3, h4, h5, h6, p {
     font-family: "Calibri", "Arial";
 }
-/* Tabs */
+/* ----- Tabs ----- */
 .nav-tabs-custom .nav-tabs li.active {
     border-top-color: #00a65a;
 }
-/* Main Map */
+/* ----- Main Map ----- */
 .legend svg text {
     font-size: 13px;
     font-family: "Calibri", "Arial";
 }
-/* Sidebar */
+/* ----- Sidebar ----- */
 .btn-default.active {
     color: #000;
     background-color: #c5c5c5;
@@ -29,4 +29,8 @@ h1, h2, h3, h4, h5, h6, p {
     height: 93.5vh;
     overflow-y: auto;
     overflow-x: hidden;
+}
+/* Adjust text size of day of week buttons */
+#receiveddateday .btn {
+    font-size: 13px;
 }
