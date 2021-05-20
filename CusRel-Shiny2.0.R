@@ -176,8 +176,10 @@ ui <- dashboardPage(
                      column(width = 3, 
                             box(width = 12, 
                                 prettyRadioButtons(inputId = "table_var", label = "Select an Independent Variable: ", 
-                                                   choices = c("Bus Route", "Complaint Reason", "Contact Source", "Incident City")))), 
-                     column(width = 9)
+                                                   choiceNames = c("Bus Route", "Complaint Reason", "Contact Source", "Incident City"), 
+                                                   choiceValues = c("Route", "Reason1", "ContactSource", "IncidentCity")))), 
+                     column(width = 9, 
+                            DTOutput("summaryTable"))
                    )), 
           tabPanel("Raw Data", 
                    DTOutput("dataTable"), 
@@ -331,6 +333,16 @@ server <- function(input, output){
                   popup = ~Popup, 
                   group = "coc_polygons")
   })
+  
+  # Tables Tab
+  output$summaryTable = renderDT(
+    datatable(filtered_data() %>% st_drop_geometry() %>% 
+                group_by(across(all_of(as.character(input$table_var)))) %>% 
+                summarize(Complaints = n()), 
+              selection = "none", class = 'row-border stripe nowrap', rownames = FALSE, 
+              options = list(scrollX = TRUE, scrollY = "500px", scrollCollapse = TRUE, deferRender = TRUE, 
+                             columnDefs = list(list(className = 'dt-left', targets = 0:1))))
+  )
   
   # Number of Complaints Shown
   output$filteredRowsText <- renderText({
