@@ -148,6 +148,11 @@ cleaned_data[["Reason2"]] <- edited_Reason2
 cleaned_data[["ForAction"]] <- edited_ForAction
 ```
 
+```{r}
+# Add day of week
+cleaned_data <- cleaned_data %>%
+  mutate(ReceivedDateDay =wday(ReceivedDate, label=TRUE, abbr =FALSE))
+```
 
 ```{r}
 # Write out
