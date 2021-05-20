@@ -150,7 +150,7 @@ ui <- dashboardPage(
       ),
       fluidRow(
         tabBox(id = "tabset1", width = 12, 
-          tabPanel("Stops Map", 
+          tabPanel("Main Map", 
                    withSpinner(leafletOutput("point_map", height = "600px"), 
                                type = getOption("spinner.type", 6), 
                                color = getOption("spinner.color", "#00a65a"),
@@ -162,7 +162,19 @@ ui <- dashboardPage(
                                  type = getOption("spinner.type", 6), 
                                  color = getOption("spinner.color", "#00a65a"),
                                  hide.ui = FALSE),
-                     h4(tags$a(href="https://opendata.mtc.ca.gov/datasets/28a03a46fe9c4df0a29746d6f8c633c8_0", "More About the Communities of Concern Data Set"))))), 
+                     h5(tags$a(href="https://opendata.mtc.ca.gov/datasets/28a03a46fe9c4df0a29746d6f8c633c8_0", "More About the Communities of Concern Data Set"))))), 
+          tabPanel("Graphs", 
+                   fluidRow(
+                     column(width = 4, 
+                            box(width = 16, "Insert Independent Variable Selector Here")), 
+                     column(width = 12)
+                   )), 
+          tabPanel("Tables", 
+                   fluidRow(
+                     column(width = 4, 
+                            box(width = 16, "Insert Independent Variable Selector Here")), 
+                     column(width = 12)
+                   )), 
           tabPanel("Raw Data", 
                    DTOutput("dataTable"), 
                    downloadButton("downloadCSV", "Download as CSV")
