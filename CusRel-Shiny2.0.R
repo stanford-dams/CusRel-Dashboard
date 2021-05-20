@@ -169,7 +169,8 @@ ui <- dashboardPage(
                             box(width = 12, 
                                 prettyRadioButtons(inputId = "graph_var", label = "Select an Independent Variable: ", 
                                                    choices = c("Bus Route", "Complaint Reason", "Contact Source", "Incident City")))), 
-                     column(width = 9)
+                     column(width = 9, 
+                            plotOutput("thePlot"))
                    )), 
           tabPanel("Tables", 
                    fluidRow(
@@ -332,6 +333,29 @@ server <- function(input, output){
                   label = Labels, 
                   popup = ~Popup, 
                   group = "coc_polygons")
+  })
+  
+  # Graphs Tab
+  output$thePlot <- renderPlot({
+    topLevels <- cus_rel_data %>%
+      dplyr::count(ContactSource) %>%
+      slice_max(order_by=n, n=5) %>%
+      arrange(n) %>%
+      pull(ContactSource)
+    p <- filtered_data() %>%
+      mutate(Month=month(ReceivedDate),
+             PlotVar=if_else(ContactSource %in% topLevels, ContactSource, "Other"),
+             PlotVar=fct_relevel(PlotVar, c("Other", topLevels))) %>%
+      ggplot() +
+      #geom_bar(aes(x=Month, fill=PlotVar)) +
+      geom_bar(aes(x=Month, fill=PlotVar), position="fill") +
+      scale_x_continuous(breaks=1:12, labels=substr(month.name[1:12], 1, 3)) +
+      scale_y_continuous(labels=scales::percent) +
+      guides(fill=guide_legend(reverse=TRUE)) +
+      labs(fill="ContactSource") +
+      # ylab("Frequency")
+      ylab("Monthly Proportion")
+    print(p)
   })
   
   # Tables Tab
