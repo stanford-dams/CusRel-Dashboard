@@ -12,6 +12,8 @@ library(tmaptools)
 library(shinydashboard)
 library(DT)
 library(lubridate)
+library(grid)
+library(gridExtra)
 
 select <- dplyr::select
 
