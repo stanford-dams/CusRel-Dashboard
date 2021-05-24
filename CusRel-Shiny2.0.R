@@ -170,7 +170,8 @@ ui <- dashboardPage(
                      column(width = 3, 
                             box(width = 12, 
                                 prettyRadioButtons(inputId = "graph_var", label = "Select an Independent Variable: ", 
-                                                   choices = c("Bus Route", "Complaint Reason", "Contact Source", "Incident City")))), 
+                                                   choiceNames = c("Bus Route", "Complaint Reason", "Contact Source", "Incident City"),
+                                                   choiceValues = c("Route", "Reason1", "ContactSource", "IncidentCity")))), 
                      column(width = 9, 
                             plotOutput("thePlots"))
                    )), 
@@ -339,38 +340,35 @@ server <- function(input, output){
   
   # Graphs Tab
   output$thePlots <- renderPlot({
+    plot_var <- input$graph_var
     topLevels <- cus_rel_data %>%
-      dplyr::count(ContactSource) %>%
+      dplyr::count(.data[[plot_var]]) %>%
       slice_max(order_by=n, n=5) %>%
       arrange(n) %>%
-      pull(ContactSource)
-      p1 <- filtered_data() %>%
+      pull(.data[[plot_var]])
+    p1 <- filtered_data() %>%
       mutate(Month=month(ReceivedDate),
-             PlotVar=if_else(ContactSource %in% topLevels, ContactSource, "Other"),
+             PlotVar=if_else((.data[[plot_var]]) %in% topLevels, .data[[plot_var]], "Other"),
              PlotVar=fct_relevel(PlotVar, c("Other", topLevels))) %>%
       ggplot() +
-      #geom_bar(aes(x=Month, fill=PlotVar)) +
       geom_bar(aes(x=Month, fill=PlotVar), position="fill") +
       scale_x_continuous(breaks=1:12, labels=substr(month.name[1:12], 1, 3)) +
       scale_y_continuous(labels=scales::percent) +
       guides(fill=guide_legend(reverse=TRUE)) +
-      labs(fill="ContactSource") +
-      # ylab("Frequency")
+      labs(fill=plot_var) +
       ylab("Monthly Proportion")
 
-      p2 <- filtered_data() %>%
+    p2 <- filtered_data() %>%
       mutate(Month=month(ReceivedDate),
-             PlotVar=if_else(ContactSource %in% topLevels, ContactSource, "Other"),
+             PlotVar=if_else(.data[[plot_var]] %in% topLevels, .data[[plot_var]], "Other"),
              PlotVar=fct_relevel(PlotVar, c("Other", topLevels))) %>%
       ggplot() +
-      #geom_bar(aes(x=Month, fill=PlotVar)) +
       geom_bar(aes(x=Month, fill=PlotVar), position = "stack") +
       scale_x_continuous(breaks=1:12, labels=substr(month.name[1:12], 1, 3)) +
       scale_y_continuous() +
       guides(fill=guide_legend(reverse=TRUE)) +
-      labs(fill="ContactSource") +
-      # ylab("Frequency")
-      ylab("Monthly Proportion")
+      labs(fill=plot_var) +
+      ylab("Number of complaints")
       grid.arrange(p1,p2, nrow = 2)
   })
   
