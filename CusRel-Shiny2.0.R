@@ -65,6 +65,11 @@ cus_rel_coc <- cus_rel_coc %>%
                        "<b>% Single Parent Family:</b> ", round(pct_spfam*10, 2))
   )
 
+# List to convert from of internal data field names to graph UI names
+graphUIVars <- c("Bus Route", "Complaint Reason", "Contact Source", "Incident City") 
+names(graphUIVars) <- c("Route", "Reason1", "ContactSource", "IncidentCity")
+
+
 # Define UI
 ui <- dashboardPage(
   
@@ -145,7 +150,6 @@ ui <- dashboardPage(
       ))
     ),
   
-    # Show a plot of the generated distribution
     dashboardBody(
       tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "styles.css")
@@ -170,8 +174,12 @@ ui <- dashboardPage(
                      column(width = 3, 
                             box(width = 12, 
                                 prettyRadioButtons(inputId = "graph_var", label = "Select an Independent Variable: ", 
-                                                   choiceNames = c("Bus Route", "Complaint Reason", "Contact Source", "Incident City"),
-                                                   choiceValues = c("Route", "Reason1", "ContactSource", "IncidentCity")))), 
+                                                   choiceNames = as.character(graphUIVars),
+                                                   choiceValues = names(graphUIVars))),
+                                selectInput(inputId = "graph_n_levels", label = "Select Number of Categories to Plot: ", 
+                                            selected = "5",
+                                            choices = as.character(1:10)),
+                                checkboxInput(inputId = "graph_show_other", label = "Show other?", value=TRUE)), 
                      column(width = 9, 
                             plotOutput("thePlots"))
                    )), 
@@ -180,8 +188,8 @@ ui <- dashboardPage(
                      column(width = 3, 
                             box(width = 12, 
                                 prettyRadioButtons(inputId = "table_var", label = "Select an Independent Variable: ", 
-                                                   choiceNames = c("Bus Route", "Complaint Reason", "Contact Source", "Incident City"), 
-                                                   choiceValues = c("Route", "Reason1", "ContactSource", "IncidentCity")))), 
+                                                   choiceNames = as.character(graphUIVars), 
+                                                   choiceValues = names(graphUIVars)))), 
                      column(width = 9, 
                             DTOutput("summaryTable"))
                    )), 
@@ -340,36 +348,56 @@ server <- function(input, output){
   
   # Graphs Tab
   output$thePlots <- renderPlot({
-    plot_var <- input$graph_var
-    topLevels <- cus_rel_data %>%
-      dplyr::count(.data[[plot_var]]) %>%
-      slice_max(order_by=n, n=5) %>%
+    plot_var_name <- input$graph_var
+    n_levels <- as.numeric(input$graph_n_levels)
+    show_other <- input$graph_show_other
+    topLevels <- filtered_data() %>%
+      dplyr::count(.data[[plot_var_name]]) %>%
+      slice_max(order_by=n, n=n_levels) %>%
       arrange(n) %>%
-      pull(.data[[plot_var]])
-    p1 <- filtered_data() %>%
+      pull(.data[[plot_var_name]])
+    count_plot_data <- filtered_data() %>%
+      st_drop_geometry() %>%
       mutate(Month=month(ReceivedDate),
-             PlotVar=if_else((.data[[plot_var]]) %in% topLevels, .data[[plot_var]], "Other"),
-             PlotVar=fct_relevel(PlotVar, c("Other", topLevels))) %>%
+             PlotVar=if_else((.data[[plot_var_name]]) %in% topLevels, .data[[plot_var_name]], "Other"),
+             PlotVar=fct_relevel(PlotVar, c("Other", topLevels)))
+    monthly_totals <- count_plot_data %>%
+      group_by(Month) %>%
+      summarise("MonthlyCount"=n())
+    prop_plot_data <- count_plot_data %>%
+      group_by(Month, PlotVar) %>%
+      summarise("n"=n()) %>%
+      left_join(monthly_totals, by="Month") %>%
+      mutate(monthly_prop=n/MonthlyCount)
+    if (!input$graph_show_other){
+      count_plot_data <- count_plot_data %>%
+        filter(PlotVar != "Other")
+      prop_plot_data <- prop_plot_data %>%
+        filter(PlotVar != "Other")
+    }
+    p1 <- prop_plot_data %>%
       ggplot() +
-      geom_bar(aes(x=Month, fill=PlotVar), position="fill") +
-      scale_x_continuous(breaks=1:12, labels=substr(month.name[1:12], 1, 3)) +
-      scale_y_continuous(labels=scales::percent) +
+      geom_col(aes(x=factor(Month, levels=1:12), y=monthly_prop, fill=PlotVar), position="stack") +
+      scale_x_discrete(breaks=1:12, labels=substr(month.name[1:12], 1, 3)) +
+      scale_y_continuous(labels=scales::percent, limits=c(0,1)) +
       guides(fill=guide_legend(reverse=TRUE)) +
-      labs(fill=plot_var) +
-      ylab("Monthly Proportion")
-
-    p2 <- filtered_data() %>%
-      mutate(Month=month(ReceivedDate),
-             PlotVar=if_else(.data[[plot_var]] %in% topLevels, .data[[plot_var]], "Other"),
-             PlotVar=fct_relevel(PlotVar, c("Other", topLevels))) %>%
+      labs(fill=plot_var_name) +
+      xlab("Month") +
+      ylab("") +
+      ggtitle(paste("Monthly Proportion of Complaints by ", graphUIVars[[plot_var_name]], sep="")) + 
+      theme(plot.title = element_text(hjust = 0.5)) # center plot title
+    p2 <- count_plot_data %>%
       ggplot() +
-      geom_bar(aes(x=Month, fill=PlotVar), position = "stack") +
-      scale_x_continuous(breaks=1:12, labels=substr(month.name[1:12], 1, 3)) +
+      geom_bar(aes(x=factor(Month, levels=1:12), fill=PlotVar), position = "stack") +
+      scale_x_discrete(breaks=1:12, labels=substr(month.name[1:12], 1, 3)) +
       scale_y_continuous() +
       guides(fill=guide_legend(reverse=TRUE)) +
-      labs(fill=plot_var) +
-      ylab("Number of complaints")
-      grid.arrange(p1,p2, nrow = 2)
+      labs(fill=plot_var_name) +
+      xlab("Month") +
+      ylab("") +
+      ggtitle(paste("Monthly Number of Complaints by ", graphUIVars[[plot_var_name]], sep="")) + 
+      theme(plot.title = element_text(hjust = 0.5)) # center plot title
+    grid.arrange(p1,p2, nrow = 2)
   })
   
   # Tables Tab
