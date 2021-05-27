@@ -14,6 +14,7 @@ library(DT)
 library(lubridate)
 library(grid)
 library(gridExtra)
+library(rgdal)
 
 select <- dplyr::select
 
@@ -23,6 +24,11 @@ cus_rel_data <- read_csv("Clean-CusRel-data.csv", na="") %>%
          ResolvedDateTime=as.character(ResolvedDateTime),
          IncidentDateTime=as.character(IncidentDateTime),
          updatedOn=as.character(updatedOn))
+
+#Create Website Routes and Website Stops data
+website_routes <- rgdal::readOGR("/Users/kristiepark/Downloads/Spring21RouteShape_MidSignup (2).json")
+website_routes_sf <- st_as_sf(website_routes)
+website_stops <- unique_stops <- rgdal::readOGR("/Users/kristiepark/Downloads/UniqueStops_Spring21_MS (1).json")
   
 # Convert cusrel data to sf
 cus_rel_sf <- st_as_sf(cus_rel_data, coords = c("Longitude", "Latitude"),
@@ -146,6 +152,11 @@ ui <- dashboardPage(
                     choices = sort(unique(cus_rel_data$ForAction)), 
                     selected = sort(unique(cus_rel_data$ForAction)),
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Departments', 'live-search-placeholder' = 'Search for Departments', 'selected-text-format' = 'count > 3', 'size' = 5),
+                    multiple = TRUE),
+        pickerInput(inputId = "routelines", label = "Select Route Lines", width = "100%", 
+                    choices = sort(unique(website_routes$PUB_RTE)), 
+                    selected = sort(unique(website_routes$PUB_RTE)),
+                    options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Route Lines', 'live-search-placeholder' = 'Search for Routes', 'selected-text-format' = 'count > 3', 'size' = 5),
                     multiple = TRUE)
       ))
     ),
@@ -211,10 +222,15 @@ server <- function(input, output){
   
   contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
   contact_source_labels <- c("WEB", "Phone", "Social Media", "Email", "Board of Directors", "Letter", "Operations", "App", "Walk In", "Five11")
-  contact_source_palette <- colorFactor(palette="Set3", domain=contact_sources)
+  contact_source_palette <- colorFactor(palette="YlGnBu", domain=contact_sources)
   color_list <- contact_source_palette(contact_sources)
   
   coc_palette <- colorNumeric(c("white", "#db1a02"), domain = c(0, 1))
+  
+  library(RColorBrewer)
+  website_route_palette <- brewer.pal(4, "Spectral")
+  website_route_palette <- colorRampPalette(website_route_palette)(200)
+  
   # Heatmap hover labels
   Labels <- str_c("<b>Complaints:</b> ", cus_rel_coc$n) %>% lapply(htmltools::HTML)
   
@@ -243,8 +259,15 @@ server <- function(input, output){
                      singleFeature=T, 
                      rectangleOptions=drawRectangleOptions(showArea=FALSE, repeatMode=TRUE),
                      editOptions=editToolbarOptions(remove=TRUE)) %>%
-      addLegend("bottomright", colors = color_list, labels = contact_source_labels, title = "Contact Source")
-  })
+      addLegend("bottomright", colors = color_list, labels = contact_source_labels, title = "Contact Source") %>% 
+      addPolylines(data = website_routes, label = website_routes$PUB_RTE, group = "Show Routes", color = website_route_palette) %>% 
+      addCircleMarkers(data = website_stops, label = website_stops$STP_DESCRI, group = "Show Stops", radius = 0.05, color = "black") %>% 
+      addLayersControl(
+        overlayGroups = c("Show Routes", "Show Stops"),
+        options = layersControlOptions(collapsed = FALSE)
+      ) %>% 
+      hideGroup(c("Show Routes", "Show Stops"))
+    })
   
   # CoC Heat Map
   output$CoC_map <- renderLeaflet({
@@ -272,14 +295,21 @@ server <- function(input, output){
            IncidentCity %in% input$cities, 
            Route %in% input$routes,
            RespondVia %in% input$respondVia, 
-           ForAction %in% input$department, 
+           ForAction %in% input$department,
            Reason1 %in% input$reasons | Reason2 %in% input$reasons,
            between(ReceivedDate, input$date[1], input$date[2]),
            ContactSource %in% input$contact,
            TitleVI %in% input$title_vi,
            ADAComplaint %in% input$ada,
-           st_within(geometry, subset_polygon(), sparse=FALSE))
+           st_within(geometry, subset_polygon(), sparse=FALSE))  
   )
+  
+#Trying to make Select Routes Dropdown Menu Reactive...(Needs work)
+ # filtered_routes_data <- reactive(
+ #  dplyr::filter(website_routes_sf, 
+ #                 PUB_RTE %in% input$routelines)
+ # )
+  
   # Update Map and filteredRowsText After Options are Changed
   observeEvent(filtered_data(), {
     proxy <- leafletProxy("point_map", data = filtered_data()) %>%

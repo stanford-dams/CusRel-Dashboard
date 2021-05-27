@@ -38,6 +38,18 @@ color_list <- contact_source_palette(contact_sources)
 ```
 
 ```{r}
+website_routes <- rgdal::readOGR("/Users/kristiepark/Downloads/Spring21RouteShape_MidSignup (2).json")
+website_stops <- rgdal::readOGR("/Users/kristiepark/Downloads/UniqueStops_Spring21_MS (1).json")
+```
+
+```{r}
+library(RColorBrewer)
+website_route_palette <- brewer.pal(4, "Set2")
+website_route_palette <- colorRampPalette(website_route_palette)(200)
+```
+
+
+```{r}
 the_map <- cus_rel_data %>%
   leaflet() %>%
     addProviderTiles(providers$Stamen.TonerLite) %>%
@@ -46,7 +58,9 @@ the_map <- cus_rel_data %>%
                      fillOpacity = 0.6, stroke = FALSE, 
                      color = ~contact_source_palette(ContactSource), 
                      popup = ~Label) %>%
-  addLegend("bottomright", colors = color_list, labels = contact_sources, title = "Contact Source")
+   addLegend("bottomright", colors = color_list, labels = contact_sources, title = "Contact Source") %>% 
+ #  addPolylines(data = website_routes, label = website_routes$PUB_RTE, group = "Show Routes", color = website_route_palette) %>% 
+   addCircleMarkers(data = website_stops, label = website_stops$STP_DESCRI, group = "Show Stops", color = "black", radius = 0.05)  
 
 the_map
 ```
