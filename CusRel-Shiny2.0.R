@@ -25,11 +25,13 @@ cus_rel_data <- read_csv("Clean-CusRel-data.csv", na="") %>%
          IncidentDateTime=as.character(IncidentDateTime),
          updatedOn=as.character(updatedOn))
 
-#Create Website Routes and Website Stops data
-website_routes <- rgdal::readOGR("/Users/kristiepark/Downloads/Spring21RouteShape_MidSignup (2).json")
+# Read in geoJSON stops and routes data
+website_routes <- geojsonio::geojson_read("Spring21RouteShape_MidSignup.json", what = "sp")
+website_stops <- geojsonio::geojson_read("UniqueStops_Spring21_MS.json", what = "sp")
+
+# Convert website_routes to sf
 website_routes_sf <- st_as_sf(website_routes)
-website_stops <- unique_stops <- rgdal::readOGR("/Users/kristiepark/Downloads/UniqueStops_Spring21_MS (1).json")
-  
+
 # Convert cusrel data to sf
 cus_rel_sf <- st_as_sf(cus_rel_data, coords = c("Longitude", "Latitude"),
                        remove=FALSE)
@@ -154,8 +156,8 @@ ui <- dashboardPage(
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Departments', 'live-search-placeholder' = 'Search for Departments', 'selected-text-format' = 'count > 3', 'size' = 5),
                     multiple = TRUE),
         pickerInput(inputId = "routelines", label = "Select Route Lines", width = "100%", 
-                    choices = sort(unique(website_routes$PUB_RTE)), 
-                    selected = sort(unique(website_routes$PUB_RTE)),
+                    choices = sort(unique(website_routes_sf$PUB_RTE)), 
+                    selected = NULL,
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Route Lines', 'live-search-placeholder' = 'Search for Routes', 'selected-text-format' = 'count > 3', 'size' = 5),
                     multiple = TRUE)
       ))
@@ -260,13 +262,13 @@ server <- function(input, output){
                      rectangleOptions=drawRectangleOptions(showArea=FALSE, repeatMode=TRUE),
                      editOptions=editToolbarOptions(remove=TRUE)) %>%
       addLegend("bottomright", colors = color_list, labels = contact_source_labels, title = "Contact Source") %>% 
-      addPolylines(data = website_routes, label = website_routes$PUB_RTE, group = "Show Routes", color = website_route_palette) %>% 
+      addPolylines(data = website_routes_sf, label = website_routes_sf$PUB_RTE, group = "Show Routes", color = website_route_palette) %>% 
       addCircleMarkers(data = website_stops, label = website_stops$STP_DESCRI, group = "Show Stops", radius = 0.05, color = "black") %>% 
       addLayersControl(
-        overlayGroups = c("Show Routes", "Show Stops"),
+        overlayGroups = c("Show Stops"),
         options = layersControlOptions(collapsed = FALSE)
       ) %>% 
-      hideGroup(c("Show Routes", "Show Stops"))
+      hideGroup(c("Show Stops"))
     })
   
   # CoC Heat Map
@@ -304,6 +306,11 @@ server <- function(input, output){
            st_within(geometry, subset_polygon(), sparse=FALSE))  
   )
   
+  filtered_data_routes <- reactive(
+    dplyr::filter(website_routes_sf,
+                  PUB_RTE %in% input$routelines),
+  )
+  
 #Trying to make Select Routes Dropdown Menu Reactive...(Needs work)
  # filtered_routes_data <- reactive(
  #  dplyr::filter(website_routes_sf, 
@@ -325,7 +332,19 @@ server <- function(input, output){
       filteredRowsText(paste("Selected", nrow(filtered_data()), "of", nrow(cus_rel_data), "complaints"))
   })
   
-  # Update map when user updates rectangle from drawToolba
+  #Update map after routes are selected
+  observeEvent(filtered_data_routes(), {
+    if (nrow(filtered_data_routes()) == 0) {
+      proxy <- leafletProxy("point_map", data = website_routes_sf) %>%
+        clearGroup("Show Routes")
+    }
+    else {
+      proxy <- leafletProxy("point_map", data = filtered_data_routes()) %>%
+        clearGroup("Show Routes") %>%
+        addPolylines(label = filtered_data_routes()$PUB_RTE, group="Show Routes", color=website_route_palette)
+    }})
+  
+  # Update map when user updates rectangle from drawToolbar
   observeEvent(input$point_map_draw_all_features, {
     features <- input$point_map_draw_all_features$features
     # No features found (e.g. user deleted shapes)

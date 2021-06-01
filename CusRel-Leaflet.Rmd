@@ -6,11 +6,13 @@ output: html_document
 ```{r}
 library(leaflet)
 library(tidyverse)
+library(sf)
 ```
 
 ```{r}
+install.packages("geojsonio")
 # Read in data
-cus_rel_data <- read_csv("cus_rel_data1.csv")
+cus_rel_data <- read_csv("Clean-CusRel-data.csv")
 ```
 
 ```{r}
@@ -38,9 +40,19 @@ color_list <- contact_source_palette(contact_sources)
 ```
 
 ```{r}
-website_routes <- rgdal::readOGR("/Users/kristiepark/Downloads/Spring21RouteShape_MidSignup (2).json")
-website_stops <- rgdal::readOGR("/Users/kristiepark/Downloads/UniqueStops_Spring21_MS (1).json")
+#website_routes <- rgdal::readOGR("/Users/kristiepark/Downloads/Spring21RouteShape_MidSignup (2).json")
+#website_stops <- rgdal::readOGR("/Users/kristiepark/Downloads/UniqueStops_Spring21_MS (1).json")
 ```
+
+```{r}
+website_routes <- geojsonio::geojson_read("Spring21RouteShape_MidSignup.json", what = "sp")
+website_stops <- geojsonio::geojson_read("UniqueStops_Spring21_MS.json", what = "sp")
+```
+
+```{r}
+website_routes_sf <- st_as_sf(website_routes)
+```
+
 
 ```{r}
 library(RColorBrewer)
@@ -59,8 +71,12 @@ the_map <- cus_rel_data %>%
                      color = ~contact_source_palette(ContactSource), 
                      popup = ~Label) %>%
    addLegend("bottomright", colors = color_list, labels = contact_sources, title = "Contact Source") %>% 
- #  addPolylines(data = website_routes, label = website_routes$PUB_RTE, group = "Show Routes", color = website_route_palette) %>% 
-   addCircleMarkers(data = website_stops, label = website_stops$STP_DESCRI, group = "Show Stops", color = "black", radius = 0.05)  
+   addPolylines(data = website_routes_sf, label = website_routes_sf$PUB_RTE, group="Show Routes", color=website_route_palette) %>%
+   addCircleMarkers(data = website_stops, popup = website_stops$STP_DESCRI, group = "Show Stops", color = "black", radius = 0.05) %>%
+   addLayersControl(
+     overlayGroups = ("Show Stops"),
+     options = layersControlOptions(collapsed = FALSE)
+   )
 
 the_map
 ```
