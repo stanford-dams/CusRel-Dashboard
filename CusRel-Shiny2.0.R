@@ -188,11 +188,11 @@ ui <- dashboardPage(
                             box(width = 12, 
                                 prettyRadioButtons(inputId = "graph_var", label = "Select an Independent Variable: ", 
                                                    choiceNames = as.character(graphUIVars),
-                                                   choiceValues = names(graphUIVars))),
+                                                   choiceValues = names(graphUIVars)),
                                 selectInput(inputId = "graph_n_levels", label = "Select Number of Categories to Plot: ", 
                                             selected = "5",
                                             choices = as.character(1:10)),
-                                checkboxInput(inputId = "graph_show_other", label = "Show other?", value=TRUE)), 
+                                checkboxInput(inputId = "graph_show_other", label = "Show other?", value=TRUE))), 
                      column(width = 9, 
                             plotOutput("thePlots"))
                    )), 
