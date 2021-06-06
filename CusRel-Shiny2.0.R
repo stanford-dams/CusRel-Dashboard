@@ -194,7 +194,10 @@ ui <- dashboardPage(
                                             choices = as.character(1:10)),
                                 checkboxInput(inputId = "graph_show_other", label = "Show other?", value=TRUE))), 
                      column(width = 9, 
-                            plotOutput("thePlots"))
+                            withSpinner(plotOutput("thePlots"), 
+                                        type = getOption("spinner.type", 6), 
+                                        color = getOption("spinner.color", "#00a65a"),
+                                        hide.ui = FALSE))
                    )), 
           tabPanel("Tables", 
                    fluidRow(
@@ -247,7 +250,7 @@ server <- function(input, output){
     cus_rel_data %>%
       leaflet() %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
-      addCircleMarkers(lat = ~jitter(Latitude, factor = 6), lng = ~jitter(Longitude, factor = 6), 
+      addCircleMarkers(lat = ~jitter(Latitude, factor = 6, amount = 0.0001), lng = ~jitter(Longitude, factor = 6, amount = 0.0001), 
                        fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
                        fillOpacity = 0.6, stroke = TRUE, 
                        radius = 8, 
@@ -322,7 +325,7 @@ server <- function(input, output){
     proxy <- leafletProxy("point_map", data = filtered_data()) %>%
       clearGroup("circlemarkers") %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
-      addCircleMarkers(lat = ~jitter(Latitude, factor = 6), lng = ~jitter(Longitude, factor = 6), 
+      addCircleMarkers(lat = ~jitter(Latitude, factor = 6, amount = 0.0001), lng = ~jitter(Longitude, factor = 6, amount = 0.0001), 
                        fill = TRUE, fillColor = ~contact_source_palette(ContactSource), 
                        fillOpacity = 0.6, stroke = TRUE, 
                        radius = 8, 
