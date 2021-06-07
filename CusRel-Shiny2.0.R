@@ -141,7 +141,7 @@ ui <- dashboardPage(
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Cities', 'live-search-placeholder' = 'Search for Cities', 'selected-text-format' = 'count > 3', 'size' = 5),
                     multiple = TRUE),
         pickerInput(inputId = "routes", label = "Route", width = "100%", 
-                    choices = cus_rel_data %>% pull(Route) %>% unique(), 
+                    choices = mixedsort(cus_rel_data %>% pull(Route) %>% unique(), decreasing=FALSE), 
                     selected = cus_rel_data %>% pull(Route) %>% unique(),
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Routes', 'live-search-placeholder' = 'Search for Routes', 'selected-text-format' = 'count > 3', 'size' = 5),
                     multiple = TRUE),
