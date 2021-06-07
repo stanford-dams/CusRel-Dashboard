@@ -77,7 +77,9 @@ cus_rel_coc <- cus_rel_coc %>%
 graphUIVars <- c("Bus Route", "Complaint Reason", "Contact Source", "Incident City") 
 names(graphUIVars) <- c("Route", "Reason1", "ContactSource", "IncidentCity")
 
-
+# Raw reason names
+rawReasons <- sort(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique)
+  
 # Define UI
 ui <- dashboardPage(
   
@@ -146,8 +148,8 @@ ui <- dashboardPage(
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Routes', 'live-search-placeholder' = 'Search for Routes', 'selected-text-format' = 'count > 3', 'size' = 5),
                     multiple = TRUE),
         pickerInput(inputId = "reasons", label = "Complaint Reason", width = "100%", 
-                    choices = sort(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique),
-                    selected = sort(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique),
+                    choices = rawReasons[rawReasons != "NA"],
+                    selected = rawReasons[rawReasons != "NA"],
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Reasons', 'live-search-placeholder' = 'Search for Reasons', 'selected-text-format' = 'count > 3', 'size' = 5), 
                     multiple = TRUE),
         pickerInput(inputId = "department", label = "Department", width = "100%", 

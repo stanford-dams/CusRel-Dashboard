@@ -125,41 +125,20 @@ cleaned_data <- cleaned_data %>%
 ```
 
 ```{r}
-# Change N/A and NULL into Unknown
-cleaned_data <- cleaned_data %>%
+# Change N/A and NULL into Unknown; add reason columns, day of week
+clean_data <- cleaned_data %>%
   mutate(IncidentCity = ifelse((IncidentCity %in% c("NULL", "N/A")), "Unknown", IncidentCity),
          Route = ifelse((Route %in% c("NULL", "N/A") | is.na(Route)), "Unknown", Route),
-         ForAction = ifelse(is.na(ForAction), "Unknown", ForAction))
-```
-
-```{r}
-# 4/28 edits: Sorting the Routes, Reason1/2, and ForAction columns
-
-# Actually sorting the columns
-edited_Reason1 <- if_else(cleaned_data$Reason1 == "Late", cleaned_data$Reason1, str_sub(cleaned_data$Reason1, 5))
-edited_Reason2 <- if_else(cleaned_data$Reason2 == "Late", cleaned_data$Reason2, str_sub(cleaned_data$Reason2, 5))
-edited_ForAction <- if_else(cleaned_data$ForAction == "Unknown", cleaned_data$ForAction, str_sub(cleaned_data$ForAction, 4))
-
-# Replacing corresponding columns in df
-cleaned_data[["Reason1"]] <- edited_Reason1
-cleaned_data[["Reason2"]] <- edited_Reason2
-cleaned_data[["ForAction"]] <- edited_ForAction
-```
-
-```{r}
-# Add day of week
-cleaned_data <- cleaned_data %>%
-  mutate(ReceivedDateDay =wday(ReceivedDate, label=TRUE, abbr =FALSE))
+         ForAction = ifelse(is.na(ForAction), "Unknown", ForAction),
+         Reason1=if_else(grepl(pattern="\\d\\d\\.\\s.*$", x=Reason1), str_sub(Reason1, 5), Reason1),
+         Reason2=if_else(grepl(pattern="\\d\\d\\.\\s.*$", x=Reason2), str_sub(Reason2, 5), Reason2),
+         ForAction=if_else(grepl(pattern=".*\\.\\s", x=ForAction), sapply(str_split(ForAction, " "), function(x) str_c(x[-1], collapse=" ")), ForAction),
+         ReceivedDateDay=wday(ReceivedDate, label=TRUE, abbr=FALSE))
 ```
 
 ```{r}
 # Write out
-write_csv(cleaned_data, paste(WORKING_DIR, "/Clean-CusRel-data.csv", sep=""))
-```
-
-```{r}
-# Write out (4/28 edits)
-# write.csv(cleaned_data, "/Users/cynthiachen/Desktop/School stuff/DAMS/CusRel-dashboard/Clean-CusRel-data.csv")
+write_csv(clean_data, paste(WORKING_DIR, "/Clean-CusRel-data.csv", sep=""))
 ```
 
 
