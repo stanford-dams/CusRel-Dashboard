@@ -91,7 +91,8 @@ ui <- dashboardPage(
                   titleWidth = 380), 
   
   dashboardSidebar(
-      fluidRow(column(width = 12, align = "center", style="padding-top: 12px;", 
+    
+    fluidRow(column(width = 12, align = "center", style="padding-top: 12px;", 
                       h4(textOutput("filteredRowsText", inline = TRUE)))),
       width = 380,
       # Old Time Input
@@ -102,6 +103,7 @@ ui <- dashboardPage(
                   #value = c(min(cus_rel_data$ReceivedDate),max(cus_rel_data$ReceivedDate)),
                   #dragRange = TRUE
       #)),
+      
       fluidRow(column(width = 12, align = "center",
              
              dateRangeInput(inputId = "date", 
@@ -138,12 +140,15 @@ ui <- dashboardPage(
                              choices = c("Y", "N")))
       ),
       
-      fluidRow(column(width = 12,
-        pickerInput(inputId = "routelines", label = "Show Route Lines on Main Map", width = "100%", 
+      fluidRow(column(width = 12, align = "center",
+        pickerInput(inputId = "routelines", label = "Show Route Lines on Main Map", width = "90%", 
                     choices = sort(unique(website_routes_sf$PUB_RTE)), 
                     selected = NULL,
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Route Lines', 'live-search-placeholder' = 'Search for Routes', 'selected-text-format' = 'count > 3', 'size' = 5),
                     multiple = TRUE),
+      )),
+    
+      fluidRow(column(width = 12,
         pickerInput(inputId = "cities", label = "Incident City", width = "100%", 
                     choices = sort(unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE)),
                     selected = unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE),
