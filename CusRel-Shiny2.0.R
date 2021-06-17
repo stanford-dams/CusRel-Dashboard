@@ -138,7 +138,12 @@ ui <- dashboardPage(
                              choices = c("Y", "N")))
       ),
       
-      fluidRow(column(width = 12, 
+      fluidRow(column(width = 12,
+        pickerInput(inputId = "routelines", label = "Show Route Lines on Main Map", width = "100%", 
+                    choices = sort(unique(website_routes_sf$PUB_RTE)), 
+                    selected = NULL,
+                    options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Route Lines', 'live-search-placeholder' = 'Search for Routes', 'selected-text-format' = 'count > 3', 'size' = 5),
+                    multiple = TRUE),
         pickerInput(inputId = "cities", label = "Incident City", width = "100%", 
                     choices = sort(unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE)),
                     selected = unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE),
@@ -159,11 +164,6 @@ ui <- dashboardPage(
                     selected = sort(unique(cus_rel_data$ForAction)),
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Departments', 'live-search-placeholder' = 'Search for Departments', 'selected-text-format' = 'count > 3', 'size' = 5),
                     multiple = TRUE),
-        pickerInput(inputId = "routelines", label = "Select Route Lines", width = "100%", 
-                    choices = sort(unique(website_routes_sf$PUB_RTE)), 
-                    selected = NULL,
-                    options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Route Lines', 'live-search-placeholder' = 'Search for Routes', 'selected-text-format' = 'count > 3', 'size' = 5),
-                    multiple = TRUE)
       ))
     ),
   
@@ -316,12 +316,6 @@ server <- function(input, output){
     dplyr::filter(website_routes_sf,
                   PUB_RTE %in% input$routelines),
   )
-  
-#Trying to make Select Routes Dropdown Menu Reactive...(Needs work)
- # filtered_routes_data <- reactive(
- #  dplyr::filter(website_routes_sf, 
- #                 PUB_RTE %in% input$routelines)
- # )
   
   # Update Map and filteredRowsText After Options are Changed
   observeEvent(filtered_data(), {
