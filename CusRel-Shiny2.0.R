@@ -16,6 +16,7 @@ library(grid)
 library(gridExtra)
 library(gtools)
 library(rgdal)
+library(RColorBrewer)
 
 select <- dplyr::select
 
@@ -235,8 +236,7 @@ server <- function(input, output){
   
   coc_palette <- colorNumeric(c("white", "#db1a02"), domain = c(0, 1))
   
-  library(RColorBrewer)
-  website_route_palette <- brewer.pal(4, "Spectral")
+  website_route_palette <- brewer.pal(4, "YlOrRd")
   website_route_palette <- colorRampPalette(website_route_palette)(200)
   
   # Heatmap hover labels
