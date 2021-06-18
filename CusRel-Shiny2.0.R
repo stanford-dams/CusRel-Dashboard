@@ -17,6 +17,7 @@ library(gridExtra)
 library(gtools)
 library(rgdal)
 library(RColorBrewer)
+library(randomcoloR)
 
 select <- dplyr::select
 
@@ -124,9 +125,9 @@ ui <- dashboardPage(
                          selected = c("App", "Email", "Letter", "Phone", "None"), 
                          choices = c("App", "Email", "Letter", "Phone", "None")),
              checkboxGroupInput(inputId = "contact", label = "Contact Source", inline = TRUE, 
-                         selected = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11"), 
-                         choiceNames = c("WEB", "Phone", "Social Media", "Email", "Operations", "Board of Directors","Letter","App","Walk-In","511"), 
-                         choiceValues = c("WEB", "Phone", "SocialMedia", "Email", "Operations", "BoardofDirectors","Letter","App","WalkIn","Five11"))
+                         selected = c("Phone", "WEB", "App", "Social Media", "Email", "Letter", "Board of Directors", "Operations", "Walk In", "Five11"), 
+                         choiceNames = c("Phone", "WEB", "App", "Social Media", "Email", "Letter", "Board of Directors", "Operations", "Walk In", "Five11"), 
+                         choiceValues = c("Phone", "WEB", "App", "Social Media", "Email", "Letter", "Board of Directors", "Operations", "Walk In", "Five11"))
       )),
       
       fluidRow(
@@ -233,9 +234,9 @@ server <- function(input, output){
   #colors <- c("#00a65a", "#dd4b39")
   #levels <- c("Normal", "High")
   #priority_palette <- colorFactor(colors, levels = levels)
-  
+ 
   contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
-  contact_source_labels <- c("WEB", "Phone", "Social Media", "Email", "Board of Directors", "Letter", "Operations", "App", "Walk In", "Five11")
+  contact_source_labels <- c("Phone", "WEB", "App", "Social Media", "Email", "Letter", "Board of Directors", "Operations", "Walk In", "Five11")
   contact_source_palette <- colorFactor(palette="YlGnBu", domain=contact_source_labels)
   color_list <- contact_source_palette(contact_sources)
   
@@ -244,9 +245,6 @@ server <- function(input, output){
   #NEW PALETTEs
   n <- 115
   website_route_palette <- distinctColorPalette(n)
-  
- # website_route_palette <- brewer.pal(4, "YlOrRd")
-#  website_route_palette <- colorRampPalette(website_route_palette)(200)
   
   # Heatmap hover labels
   Labels <- str_c("<b>Complaints:</b> ", cus_rel_coc$n) %>% lapply(htmltools::HTML)

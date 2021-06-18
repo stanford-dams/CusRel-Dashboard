@@ -7,10 +7,12 @@ output: html_document
 library(leaflet)
 library(tidyverse)
 library(sf)
+library(RColorBrewer)
+library(randomcoloR)
+library(geojsonio)
 ```
 
 ```{r}
-install.packages("geojsonio")
 # Read in data
 cus_rel_data <- read_csv("Clean-CusRel-data.csv")
 ```
@@ -35,29 +37,19 @@ cus_rel_data <- cus_rel_data %>%
 ```{r}
 # Palette
 contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
-contact_source_palette <- colorFactor(palette="Set3", domain=contact_sources)
+contact_source_palette <- colorFactor(palette="YlGnBu", domain=contact_sources)
 color_list <- contact_source_palette(contact_sources)
+
+n <- 115
+website_route_palette <- distinctColorPalette(n)
 ```
 
 ```{r}
-#website_routes <- rgdal::readOGR("/Users/kristiepark/Downloads/Spring21RouteShape_MidSignup (2).json")
-#website_stops <- rgdal::readOGR("/Users/kristiepark/Downloads/UniqueStops_Spring21_MS (1).json")
-```
+#Routes and Stops Data
+website_routes <- geojson_read("Spring21RouteShape_MidSignup.json", what = "sp")
+website_stops <- geojson_read("UniqueStops_Spring21_MS.json", what = "sp")
 
-```{r}
-website_routes <- geojsonio::geojson_read("Spring21RouteShape_MidSignup.json", what = "sp")
-website_stops <- geojsonio::geojson_read("UniqueStops_Spring21_MS.json", what = "sp")
-```
-
-```{r}
 website_routes_sf <- st_as_sf(website_routes)
-```
-
-
-```{r}
-library(RColorBrewer)
-website_route_palette <- brewer.pal(4, "Set2")
-website_route_palette <- colorRampPalette(website_route_palette)(200)
 ```
 
 ```{r}
@@ -70,7 +62,7 @@ the_map <- cus_rel_data %>%
                      color = ~contact_source_palette(ContactSource), 
                      popup = ~Label) %>%
    addLegend("bottomright", colors = color_list, labels = contact_sources, title = "Contact Source") %>% 
-   addPolylines(data = website_routes_sf, label = website_routes_sf$PUB_RTE, group="Show Routes", color=palette) %>%
+   addPolylines(data = website_routes_sf, label = website_routes_sf$PUB_RTE, group="Show Routes", color=website_route_palette) %>%
    addCircleMarkers(data = website_stops, popup = website_stops$STP_DESCRI, group = "Show Stops", color = "black", radius = 0.05) %>%
    addLayersControl(
      overlayGroups = ("Show Stops"),
