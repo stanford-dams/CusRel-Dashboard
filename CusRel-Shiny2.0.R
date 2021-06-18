@@ -236,13 +236,17 @@ server <- function(input, output){
   
   contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
   contact_source_labels <- c("WEB", "Phone", "Social Media", "Email", "Board of Directors", "Letter", "Operations", "App", "Walk In", "Five11")
-  contact_source_palette <- colorFactor(palette="YlGnBu", domain=contact_sources)
+  contact_source_palette <- colorFactor(palette="YlGnBu", domain=contact_source_labels)
   color_list <- contact_source_palette(contact_sources)
   
   coc_palette <- colorNumeric(c("white", "#db1a02"), domain = c(0, 1))
   
-  website_route_palette <- brewer.pal(4, "YlOrRd")
-  website_route_palette <- colorRampPalette(website_route_palette)(200)
+  #NEW PALETTEs
+  n <- 115
+  website_route_palette <- distinctColorPalette(n)
+  
+ # website_route_palette <- brewer.pal(4, "YlOrRd")
+#  website_route_palette <- colorRampPalette(website_route_palette)(200)
   
   # Heatmap hover labels
   Labels <- str_c("<b>Complaints:</b> ", cus_rel_coc$n) %>% lapply(htmltools::HTML)
