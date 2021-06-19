@@ -18,6 +18,7 @@ library(gtools)
 library(rgdal)
 library(RColorBrewer)
 library(randomcoloR)
+library(cowplot)
 
 select <- dplyr::select
 
@@ -125,9 +126,9 @@ ui <- dashboardPage(
                          selected = c("App", "Email", "Letter", "Phone", "None"), 
                          choices = c("App", "Email", "Letter", "Phone", "None")),
              checkboxGroupInput(inputId = "contact", label = "Contact Source", inline = TRUE, 
-                         selected = c("Phone", "WEB", "App", "Social Media", "Email", "Letter", "Board of Directors", "Operations", "Walk In", "Five11"), 
+                         selected = c("Phone", "WEB", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11"), 
                          choiceNames = c("Phone", "WEB", "App", "Social Media", "Email", "Letter", "Board of Directors", "Operations", "Walk In", "Five11"), 
-                         choiceValues = c("Phone", "WEB", "App", "Social Media", "Email", "Letter", "Board of Directors", "Operations", "Walk In", "Five11"))
+                         choiceValues = c("Phone", "WEB", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11"))
       )),
       
       fluidRow(
@@ -204,7 +205,7 @@ ui <- dashboardPage(
                                             choices = as.character(1:10)),
                                 checkboxInput(inputId = "graph_show_other", label = "Show other?", value=TRUE))), 
                      column(width = 9, 
-                            withSpinner(plotOutput("thePlots"), 
+                            withSpinner(plotOutput("thePlots", height="700px"), 
                                         type = getOption("spinner.type", 6), 
                                         color = getOption("spinner.color", "#00a65a"),
                                         hide.ui = FALSE))
@@ -236,9 +237,9 @@ server <- function(input, output){
   #priority_palette <- colorFactor(colors, levels = levels)
  
   contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
-  contact_source_labels <- c("Phone", "WEB", "App", "Social Media", "Email", "Letter", "Board of Directors", "Operations", "Walk In", "Five11")
-  contact_source_palette <- colorFactor(palette="YlGnBu", domain=contact_source_labels)
-  color_list <- contact_source_palette(contact_sources)
+  contact_source_labels <- c("Phone", "WEB", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11")
+  contact_source_palette <- colorFactor(palette="YlGnBu", domain=contact_sources)
+  color_list <- contact_source_palette(contact_source_labels)
   
   coc_palette <- colorNumeric(c("white", "#db1a02"), domain = c(0, 1))
   
@@ -311,7 +312,7 @@ server <- function(input, output){
            Route %in% input$routes,
            RespondVia %in% input$respondVia, 
            ForAction %in% input$department,
-           Reason1 %in% input$reasons | Reason2 %in% input$reasons,
+           #Reason1 %in% input$reasons | Reason2 %in% input$reasons,
            between(ReceivedDate, input$date[1], input$date[2]),
            ContactSource %in% input$contact,
            TitleVI %in% input$title_vi,
@@ -425,13 +426,19 @@ server <- function(input, output){
       summarise("n"=n()) %>%
       left_join(monthly_totals, by="Month") %>%
       mutate(monthly_prop=n/MonthlyCount)
+    summary_data <- count_plot_data %>%
+      group_by(PlotVar) %>%
+      summarise("TotalCount"=n()) %>%
+      mutate(TotalProp = TotalCount/sum(TotalCount))
     if (!input$graph_show_other){
       count_plot_data <- count_plot_data %>%
         filter(PlotVar != "Other")
       prop_plot_data <- prop_plot_data %>%
         filter(PlotVar != "Other")
+      summary_data <- summary_data %>%
+        filter(PlotVar != "Other")
     }
-    p1 <- prop_plot_data %>%
+    prop_plot <- prop_plot_data %>%
       ggplot() +
       geom_col(aes(x=factor(Month, levels=1:12), y=monthly_prop, fill=PlotVar), position="stack") +
       scale_x_discrete(breaks=1:12, labels=substr(month.name[1:12], 1, 3)) +
@@ -442,7 +449,7 @@ server <- function(input, output){
       ylab("") +
       ggtitle(paste("Monthly Proportion of Complaints by ", graphUIVars[[plot_var_name]], sep="")) + 
       theme(plot.title = element_text(hjust = 0.5)) # center plot title
-    p2 <- count_plot_data %>%
+    count_plot <- count_plot_data %>%
       ggplot() +
       geom_bar(aes(x=factor(Month, levels=1:12), fill=PlotVar), position = "stack") +
       scale_x_discrete(breaks=1:12, labels=substr(month.name[1:12], 1, 3)) +
@@ -453,7 +460,23 @@ server <- function(input, output){
       ylab("") +
       ggtitle(paste("Monthly Number of Complaints by ", graphUIVars[[plot_var_name]], sep="")) + 
       theme(plot.title = element_text(hjust = 0.5)) # center plot title
-    grid.arrange(p1,p2, nrow = 2)
+    summary_plot <- summary_data %>%
+      ggplot(aes(x=TotalProp, y=PlotVar, fill=PlotVar, label=scales::percent(TotalProp))) + 
+      geom_col() +
+      geom_text(position=position_dodge(width=0.9),
+                hjust=-0.1,
+                size=3) +
+      labs("") +
+      xlim(c(0,1)) +
+      xlab("") +
+      ylab("") +
+      guides(fill=FALSE) +
+      ggtitle(paste("Breakdown of all selected complaints by ", graphUIVars[[plot_var_name]], sep="")) +
+      theme(plot.title = element_text(hjust = 0.5))
+    ggdraw() + 
+      draw_plot(summary_plot, x=0.075, y=0.5, width=0.7, height=0.5) +
+      draw_plot(prop_plot, x=0, y=0.25, width=1, height=0.25) +
+      draw_plot(count_plot, x=0, y=0, width=1, height=0.25)
   })
   
   # Tables Tab
