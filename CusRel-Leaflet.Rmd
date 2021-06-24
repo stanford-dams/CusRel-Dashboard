@@ -13,6 +13,11 @@ library(geojsonio)
 ```
 
 ```{r}
+install.packages("cowplot")
+```
+
+
+```{r}
 # Read in data
 cus_rel_data <- read_csv("Clean-CusRel-data.csv")
 ```
@@ -37,7 +42,7 @@ cus_rel_data <- cus_rel_data %>%
 ```{r}
 # Palette
 contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
-contact_source_palette <- colorFactor(palette="YlGnBu", domain=contact_sources)
+contact_source_palette <- colorFactor(palette="RdBu", domain=contact_sources)
 color_list <- contact_source_palette(contact_sources)
 
 n <- 115
@@ -63,7 +68,7 @@ the_map <- cus_rel_data %>%
                      popup = ~Label) %>%
    addLegend("bottomright", colors = color_list, labels = contact_sources, title = "Contact Source") %>% 
    addPolylines(data = website_routes_sf, label = website_routes_sf$PUB_RTE, group="Show Routes", color=website_route_palette) %>%
-   addCircleMarkers(data = website_stops, popup = website_stops$STP_DESCRI, group = "Show Stops", color = "black", radius = 0.05) %>%
+   addCircleMarkers(data = website_stops, popup = website_stops$STP_DESCRI, group = "Show Stops", color = "thistle", radius = 0.05) %>%
    addLayersControl(
      overlayGroups = ("Show Stops"),
      options = layersControlOptions(collapsed = FALSE)

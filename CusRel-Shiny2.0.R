@@ -126,9 +126,9 @@ ui <- dashboardPage(
                          selected = c("App", "Email", "Letter", "Phone", "None"), 
                          choices = c("App", "Email", "Letter", "Phone", "None")),
              checkboxGroupInput(inputId = "contact", label = "Contact Source", inline = TRUE, 
-                         selected = c("Phone", "WEB", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11"), 
-                         choiceNames = c("Phone", "WEB", "App", "Social Media", "Email", "Letter", "Board of Directors", "Operations", "Walk In", "Five11"), 
-                         choiceValues = c("Phone", "WEB", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11"))
+                         selected = c("WEB", "Phone", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11"), 
+                         choiceNames = c("WEB", "Phone", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11"), 
+                         choiceValues = c("WEB", "Phone", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11"))
       )),
       
       fluidRow(
@@ -237,15 +237,15 @@ server <- function(input, output){
   #priority_palette <- colorFactor(colors, levels = levels)
  
   contact_sources <- unique(cus_rel_data$ContactSource) # get unique contact sources
-  contact_source_labels <- c("Phone", "WEB", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11")
-  contact_source_palette <- colorFactor(palette="YlGnBu", domain=contact_sources)
+  contact_source_labels <- c("WEB", "Phone", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11")
+  contact_source_palette <- colorFactor(palette="RdBu", domain=contact_sources)
   color_list <- contact_source_palette(contact_source_labels)
   
   coc_palette <- colorNumeric(c("white", "#db1a02"), domain = c(0, 1))
   
-  #NEW PALETTEs
-  n <- 115
-  website_route_palette <- distinctColorPalette(n)
+  # NEW PALETTEs
+ n <- 115
+ website_route_palette <- distinctColorPalette(n)
   
   # Heatmap hover labels
   Labels <- str_c("<b>Complaints:</b> ", cus_rel_coc$n) %>% lapply(htmltools::HTML)
@@ -277,7 +277,7 @@ server <- function(input, output){
                      editOptions=editToolbarOptions(remove=TRUE)) %>%
       addLegend("bottomright", colors = color_list, labels = contact_source_labels, title = "Contact Source") %>% 
       addPolylines(data = website_routes_sf, label = website_routes_sf$PUB_RTE, group = "Show Routes", color = website_route_palette) %>% 
-      addCircleMarkers(data = website_stops, label = website_stops$STP_DESCRI, group = "Show Stops", radius = 0.05, color = "black") %>% 
+      addCircleMarkers(data = website_stops, label = website_stops$STP_DESCRI, group = "Show Stops", radius = 0.05, color = "thistle") %>% 
       addLayersControl(
         overlayGroups = c("Show Stops"),
         options = layersControlOptions(collapsed = FALSE)
