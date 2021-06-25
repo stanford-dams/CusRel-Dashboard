@@ -79,7 +79,7 @@ cus_rel_coc <- cus_rel_coc %>%
 
 # List to convert from of internal data field names to graph UI names
 graphUIVars <- c("Bus Route", "Complaint Reason", "Contact Source", "Incident City") 
-names(graphUIVars) <- c("Route", "Reason1", "ContactSource", "IncidentCity")
+names(graphUIVars) <- c("Route", "Reason1", "ContactSource", "CleanIncidentCity")
 
 # Raw reason names
 rawReasons <- sort(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique)
@@ -151,9 +151,9 @@ ui <- dashboardPage(
       )),
     
       fluidRow(column(width = 12,
-        pickerInput(inputId = "cities", label = "Incident City", width = "100%", 
-                    choices = sort(unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE)),
-                    selected = unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE),
+        pickerInput(inputId = "CleanIncidentCity", label = "Incident City", width = "100%", 
+                    choices = sort(unlist(cus_rel_data %>% select(CleanIncidentCity) %>% unique(), use.names = FALSE)),
+                    selected = unlist(cus_rel_data %>% select(CleanIncidentCity) %>% unique(), use.names = FALSE),
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Cities', 'live-search-placeholder' = 'Search for Cities', 'selected-text-format' = 'count > 3', 'size' = 5),
                     multiple = TRUE),
         pickerInput(inputId = "routes", label = "Route", width = "100%", 
@@ -308,7 +308,7 @@ server <- function(input, output){
     dplyr::filter(cus_rel_sf, 
            Priority %in% input$priorities,
            ReceivedDateDay %in% input$receiveddateday,
-           IncidentCity %in% input$cities, 
+           CleanIncidentCity %in% input$CleanIncidentCity, 
            Route %in% input$routes,
            RespondVia %in% input$respondVia, 
            ForAction %in% input$department,
