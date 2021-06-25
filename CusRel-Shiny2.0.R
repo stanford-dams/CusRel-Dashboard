@@ -29,6 +29,11 @@ cus_rel_data <- read_csv("Clean-CusRel-data.csv", na="") %>%
          IncidentDateTime=as.character(IncidentDateTime),
          updatedOn=as.character(updatedOn))
 
+# Add ReasonList column (containing up to two reasons in a list)
+# ReasonList <- apply(cus_rel_data[,c("Reason1", "Reason2")], 1, function(x) list(x[1], x[2]))
+# cus_rel_data2 <- cus_rel_data %>%
+  # mutate(ReasonList=ReasonList)
+
 # Read in geoJSON stops and routes data
 website_routes <- geojsonio::geojson_read("Spring21RouteShape_MidSignup.json", what = "sp")
 website_stops <- geojsonio::geojson_read("UniqueStops_Spring21_MS.json", what = "sp")
@@ -78,12 +83,15 @@ cus_rel_coc <- cus_rel_coc %>%
   )
 
 # List to convert from of internal data field names to graph UI names
-graphUIVars <- c("Bus Route", "Complaint Reason", "Contact Source", "Incident City") 
-names(graphUIVars) <- c("Route", "Reason1", "ContactSource", "CleanIncidentCity")
+graphUIVars <- c("Bus Route", "Contact Source", "Incident City") 
+names(graphUIVars) <- c("Route", "ContactSource", "IncidentCity")
 
 # Raw reason names
 rawReasons <- sort(cus_rel_data %>% select("Reason1", "Reason2") %>% t %>% c %>% unique)
-  
+
+# Max number of levels to show in graph
+MAX_LEVELS <- 10
+
 # Define UI
 ui <- dashboardPage(
   
@@ -151,9 +159,9 @@ ui <- dashboardPage(
       )),
     
       fluidRow(column(width = 12,
-        pickerInput(inputId = "CleanIncidentCity", label = "Incident City", width = "100%", 
-                    choices = sort(unlist(cus_rel_data %>% select(CleanIncidentCity) %>% unique(), use.names = FALSE)),
-                    selected = unlist(cus_rel_data %>% select(CleanIncidentCity) %>% unique(), use.names = FALSE),
+        pickerInput(inputId = "incidentcities", label = "Incident City", width = "100%", 
+                    choices = sort(unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE)),
+                    selected = unlist(cus_rel_data %>% select(IncidentCity) %>% unique(), use.names = FALSE),
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Cities', 'live-search-placeholder' = 'Search for Cities', 'selected-text-format' = 'count > 3', 'size' = 5),
                     multiple = TRUE),
         pickerInput(inputId = "routes", label = "Route", width = "100%", 
@@ -202,7 +210,7 @@ ui <- dashboardPage(
                                                    choiceValues = names(graphUIVars)),
                                 selectInput(inputId = "graph_n_levels", label = "Select Number of Categories to Plot: ", 
                                             selected = "5",
-                                            choices = as.character(1:10)),
+                                            choices = as.character(1:MAX_LEVELS)),
                                 checkboxInput(inputId = "graph_show_other", label = "Show other?", value=TRUE))), 
                      column(width = 9, 
                             withSpinner(plotOutput("thePlots", height="700px"), 
@@ -244,8 +252,8 @@ server <- function(input, output){
   coc_palette <- colorNumeric(c("white", "#db1a02"), domain = c(0, 1))
   
   # NEW PALETTEs
- n <- 115
- website_route_palette <- distinctColorPalette(n)
+  n <- 115
+  website_route_palette <- distinctColorPalette(n)
   
   # Heatmap hover labels
   Labels <- str_c("<b>Complaints:</b> ", cus_rel_coc$n) %>% lapply(htmltools::HTML)
@@ -308,11 +316,11 @@ server <- function(input, output){
     dplyr::filter(cus_rel_sf, 
            Priority %in% input$priorities,
            ReceivedDateDay %in% input$receiveddateday,
-           CleanIncidentCity %in% input$CleanIncidentCity, 
+           IncidentCity %in% input$incidentcities, 
            Route %in% input$routes,
            RespondVia %in% input$respondVia, 
            ForAction %in% input$department,
-           #Reason1 %in% input$reasons | Reason2 %in% input$reasons,
+           Reason1 %in% input$reasons | Reason2 %in% input$reasons,
            between(ReceivedDate, input$date[1], input$date[2]),
            ContactSource %in% input$contact,
            TitleVI %in% input$title_vi,
@@ -403,21 +411,27 @@ server <- function(input, output){
                   group = "coc_polygons")
   })
   
+  # Data for graphs - filter out to top MAX_LEVELS levels
+  topLevels <- reactive({
+    plot_var_name <- input$graph_var
+    df <- filtered_data() %>%
+      dplyr::count(.data[[plot_var_name]]) %>%
+      slice_max(order_by=n, n=MAX_LEVELS) %>%
+      arrange(n) %>%
+      pull(.data[[plot_var_name]])
+  })
+
   # Graphs Tab
   output$thePlots <- renderPlot({
     plot_var_name <- input$graph_var
     n_levels <- as.numeric(input$graph_n_levels)
     show_other <- input$graph_show_other
-    topLevels <- filtered_data() %>%
-      dplyr::count(.data[[plot_var_name]]) %>%
-      slice_max(order_by=n, n=n_levels) %>%
-      arrange(n) %>%
-      pull(.data[[plot_var_name]])
+    topLevels_df <- topLevels()[(MAX_LEVELS-n_levels+1):MAX_LEVELS]
     count_plot_data <- filtered_data() %>%
       st_drop_geometry() %>%
       mutate(Month=month(ReceivedDate),
-             PlotVar=if_else((.data[[plot_var_name]]) %in% topLevels, .data[[plot_var_name]], "Other"),
-             PlotVar=fct_relevel(PlotVar, c("Other", topLevels)))
+             PlotVar=if_else((.data[[plot_var_name]]) %in% topLevels_df, .data[[plot_var_name]], "Other"),
+             PlotVar=fct_relevel(PlotVar, c("Other", topLevels_df)))
     monthly_totals <- count_plot_data %>%
       group_by(Month) %>%
       summarise("MonthlyCount"=n())
