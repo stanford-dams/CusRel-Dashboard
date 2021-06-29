@@ -213,7 +213,7 @@ ui <- dashboardPage(
                                             choices = as.character(1:MAX_LEVELS)),
                                 checkboxInput(inputId = "graph_show_other", label = "Show other?", value=TRUE))), 
                      column(width = 9, 
-                            withSpinner(plotOutput("thePlots", height="700px"), 
+                            withSpinner(plotOutput("thePlots", height="1000px"), 
                                         type = getOption("spinner.type", 6), 
                                         color = getOption("spinner.color", "#00a65a"),
                                         hide.ui = FALSE))
