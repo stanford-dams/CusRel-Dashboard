@@ -13,6 +13,7 @@ library(readr)
 library(gtools)
 library(tmaptools)
 library(lubridate)
+library(gsubfn)
 WORKING_DIR <- "/Users/harrisonli/Documents/iCloud_Documents/Stanford/DAMS/AC_Transit/CusRel-Dashboard"
 ```
 
@@ -105,22 +106,29 @@ cleaned_data <- cleaned_data %>%
 
 
 ```{r}
-# Add Resolve Time, Incident + Receivde Date; Create Label for Popup
+# Add Resolve Time, Incident + Received Date; Clean Incident City; Create Label for Popup
 cleaned_data <- cleaned_data %>% 
   mutate(ResolveTime = round(as.numeric(difftime(as.POSIXct(ResolvedDateTime), as.POSIXct(ReceivedDateTime), units = "days"))), 
          ReceivedDate = as.Date(ReceivedDateTime, "%m/%d/%y", tz="PST8PDT"),
          ReceivedDateDay=wday(ReceivedDate, label=TRUE, abbr=FALSE),
          IncidentDate = as.Date(IncidentDateTime, "%m/%d/%y", tz="PST8PDT"), 
-         Route = toupper(Route)) %>% 
-  mutate(Label = str_c("<b>Received Date:</b> ", ReceivedDate, "<br/>",
+         IncidentCity = gsubfn(".*", list("BERKELEY" = "Berkeley", "El Ceritto" = "El Cerrito", "Freemont" = "Fremont", "hayward" = "Hayward", "Menlo park" = "Menlo Park", "oakland" = "Oakland", "Pittsburgh Bay point" = "Pittsburgh Bay Point", "San francisco" = "San Francisco"), IncidentCity),
+         Route = toupper(Route),
+         Label = str_c("<b>Priority:</b> ", Priority, "<br/>",
+                       "<b>Respond Via:</b> ", RespondVia, " &nbsp;&nbsp ", "<b>Contact Source:</b> ", ContactSource, "<br/>",
+                       
+                       "<b>Received Date:</b> ", ReceivedDate, "<br/>",
                        "<b>Incident Date:</b> ", IncidentDate, "<br/>",
+                       "<b>Day of the Week:</b> ", ReceivedDateDay, "<br/>",
+                       "<b>Incident City:</b> ", IncidentCity, "<br/>",
                        "<b>Location:</b> ", Location, "<br/>", 
                        "<b>Destination:</b> ", Destination , "<br/>",
                        "<b>Route:</b> ", Route, " &nbsp;&nbsp ", "<b>Vehicle #:</b> ", VehNo, "<br/>", 
                        "<b>Resolve Time:</b> ", ResolveTime, " day(s)<br/>", 
                        "<b>Reason(s):</b> ", Reason1, if_else(is.na(Reason2), "", str_c("; ", Reason2)), "<br/>",
-                       "<b>Ticket Number:</b> ", FileNum
-                       )) # Add a Label for Popup
+                       "<b>Title VI:</b> ", TitleVI, " &nbsp;&nbsp ", "<b>ADA Complaint:</b> ", ADAComplaint, "<br/>", 
+                       "<b>Department:</b> ", ForAction, "<br/>",
+                       "<b>Ticket Number:</b> ", FileNum)) # Add a Label for Popup 
 
 ```
 
