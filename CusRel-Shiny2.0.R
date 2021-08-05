@@ -29,6 +29,10 @@ cus_rel_data <- read_csv("Clean-CusRel-data.csv", na="") %>%
          IncidentDateTime=as.character(IncidentDateTime),
          updatedOn=as.character(updatedOn))
 
+ticketStatusChoices <- cus_rel_data %>%
+  distinct(TicketStatus) %>%
+  pull()
+
 # Add ReasonList column (containing up to two reasons in a list)
 # ReasonList <- apply(cus_rel_data[,c("Reason1", "Reason2")], 1, function(x) list(x[1], x[2]))
 # cus_rel_data2 <- cus_rel_data %>%
@@ -135,8 +139,12 @@ ui <- dashboardPage(
                          choices = c("App", "Email", "Letter", "Phone", "None")),
              checkboxGroupInput(inputId = "contact", label = "Contact Source", inline = TRUE, 
                          selected = c("WEB", "Phone", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11"), 
-                         choiceNames = c("WEB", "Phone", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11"), 
-                         choiceValues = c("WEB", "Phone", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11"))
+                         choiceNames = c("WEB", "Phone", "App", "Social Media", "Email", "Letter", "Board of Directors", "Operations", "Walk In", "Five11"), 
+                         choiceValues = c("WEB", "Phone", "App", "SocialMedia", "Email", "Letter", "BoardofDirectors", "Operations", "WalkIn", "Five11")),
+             checkboxGroupInput(inputId = "ticketStatus", label = "Ticket Status", inline = TRUE, 
+                                selected = ticketStatusChoices, 
+                                choiceNames = ticketStatusChoices, 
+                                choiceValues = ticketStatusChoices)
       )),
       
       fluidRow(
@@ -323,6 +331,7 @@ server <- function(input, output){
            Reason1 %in% input$reasons | Reason2 %in% input$reasons,
            between(ReceivedDate, input$date[1], input$date[2]),
            ContactSource %in% input$contact,
+           TicketStatus %in% input$ticketStatus,
            TitleVI %in% input$title_vi,
            ADAComplaint %in% input$ada,
            st_within(geometry, subset_polygon(), sparse=FALSE))  
