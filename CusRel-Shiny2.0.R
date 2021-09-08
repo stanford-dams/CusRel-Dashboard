@@ -19,8 +19,78 @@ library(rgdal)
 library(RColorBrewer)
 library(randomcoloR)
 library(cowplot)
+library(httr)
+library(leaflet)
+library(tidyverse)
+library(sf)
+library(RColorBrewer)
+library(randomcoloR)
+library(geojsonio)
+library(jsonlite)
+library(purrr)
+library(dplyr)
 
-select <- dplyr::select
+#Routes data from API
+extract_NB_waypoint_columns <- function(patterns, colnames){
+  my_waypoints <- as_tibble(patterns) %>%
+    pull(Waypoints)
+  my_waypoints <- my_waypoints[[1]] %>%
+    dplyr::select(one_of(colnames))
+  return(my_waypoints)
+}
+
+route_data <- "http://api.actransit.org/transit/route/ALL/waypoints/" %>% 
+  GET(query = list(token = "BC36B05ADC9CB9A7977DD5A8878937DA")) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  as_tibble()
+
+route_data %>%
+  mutate(Waypoints=purrr::map(Patterns, extract_NB_waypoint_columns, c("Longitude", "Latitude")))
+
+all_patterns <- route_data %>%
+  pull(Patterns)
+
+waypoint_longitude <- map(all_patterns, extract_NB_waypoint_columns, "Longitude")
+
+route_data <- route_data %>% 
+  select(RouteAlpha, Patterns) %>% 
+  dplyr::mutate(Longitude = pmap(list(Patterns), extract_NB_waypoint_columns, "Longitude"),
+                Latitude = pmap(list(Patterns), extract_NB_waypoint_columns, "Latitude"))
+
+#Convert route_data to SF 
+route_data <- route_data %>% unnest(c(Longitude, Latitude)) 
+route_data <- st_as_sf(route_data, coords = c("Longitude", "Latitude"), crs = 4326)
+
+#Convert route_data from point to multilinestring
+route_data <- route_data %>% 
+  group_by(RouteAlpha) %>% 
+  summarise(do_union = FALSE) %>% 
+  st_cast("MULTILINESTRING")
+
+#List of route numbers 
+routeNums <- cus_rel_data$Route %>% 
+  sort() %>% 
+  unique()
+
+# Read in geoJSON stops data & convert to sf
+website_stops <- geojsonio::geojson_read("UniqueStops_Spring21_MS.json", what = "sp")
+website_stops_sf <- st_as_sf(website_stops)
+
+#Stops API - not used due to faulty data 
+#stops_data <- "http://api.actransit.org/transit/route/ALL/Stops/" %>% 
+  #GET(query = list(token = "BC36B05ADC9CB9A7977DD5A8878937DA")) %>% 
+  #content(as = "text") %>% 
+  #fromJSON() %>% 
+  #as_tibble()
+
+#stops_data <- stops_data %>% unnest(Stops)
+#stops_data <- st_as_sf(stops_data, coords = c("Latitude", "Longitude"), crs = 4326)
+
+# Add ReasonList column (containing up to two reasons in a list)
+# ReasonList <- apply(cus_rel_data[,c("Reason1", "Reason2")], 1, function(x) list(x[1], x[2]))
+# cus_rel_data2 <- cus_rel_data %>%
+  # mutate(ReasonList=ReasonList)
 
 # Read in cusrel data, getting rid of time zone attribute
 cus_rel_data <- read_csv("Clean-CusRel-data.csv", na="") %>%
@@ -32,18 +102,6 @@ cus_rel_data <- read_csv("Clean-CusRel-data.csv", na="") %>%
 ticketStatusChoices <- cus_rel_data %>%
   distinct(TicketStatus) %>%
   pull()
-
-# Add ReasonList column (containing up to two reasons in a list)
-# ReasonList <- apply(cus_rel_data[,c("Reason1", "Reason2")], 1, function(x) list(x[1], x[2]))
-# cus_rel_data2 <- cus_rel_data %>%
-  # mutate(ReasonList=ReasonList)
-
-# Read in geoJSON stops and routes data
-website_routes <- geojsonio::geojson_read("Spring21RouteShape_MidSignup.json", what = "sp")
-website_stops <- geojsonio::geojson_read("UniqueStops_Spring21_MS.json", what = "sp")
-
-# Convert website_routes to sf
-website_routes_sf <- st_as_sf(website_routes)
 
 # Convert cusrel data to sf
 cus_rel_sf <- st_as_sf(cus_rel_data, coords = c("Longitude", "Latitude"),
@@ -160,7 +218,8 @@ ui <- dashboardPage(
       
       fluidRow(column(width = 12, align = "center",
         pickerInput(inputId = "routelines", label = "Show Route Lines on Main Map", width = "90%", 
-                    choices = sort(unique(website_routes_sf$PUB_RTE)), 
+                    choices = routeNums,
+                    #choices = sort(unique(routes_data_sf$RouteId)), 
                     selected = "10",
                     options = list('actions-box' = TRUE, 'live-search' = TRUE, 'title' = 'Select Route Lines', 'live-search-placeholder' = 'Search for Routes', 'selected-text-format' = 'count > 3', 'size' = 5),
                     multiple = TRUE),
@@ -274,7 +333,7 @@ server <- function(input, output){
   
   # Map Output
   output$point_map <- renderLeaflet({
-    cus_rel_data %>%
+    cus_rel_sf %>%
       leaflet() %>%
       addProviderTiles(providers$CartoDB.Positron) %>%
       addCircleMarkers(lat = ~jitter(Latitude, factor = 6, amount = 0.0001), lng = ~jitter(Longitude, factor = 6, amount = 0.0001), 
@@ -292,8 +351,8 @@ server <- function(input, output){
                      rectangleOptions=drawRectangleOptions(showArea=FALSE, repeatMode=TRUE),
                      editOptions=editToolbarOptions(remove=TRUE)) %>%
       addLegend("bottomright", colors = color_list, labels = contact_source_labels, title = "Contact Source") %>% 
-      addPolylines(data = website_routes_sf, label = website_routes_sf$PUB_RTE, group = "Show Routes", color = website_route_palette) %>% 
-      addCircleMarkers(data = website_stops, label = website_stops$STP_DESCRI, group = "Show Stops", radius = 0.05, color = "thistle") %>% 
+      addPolylines(data = route_data, label = route_data$RouteAlpha, group = "Show Routes", color = website_route_palette) %>% 
+      addCircleMarkers(data = website_stops_sf, label = website_stops_sf$STP_DESCRI, group = "Show Stops", radius = 0.05, color = "black") %>% 
       addLayersControl(
         overlayGroups = c("Show Stops"),
         options = layersControlOptions(collapsed = FALSE)
@@ -338,8 +397,13 @@ server <- function(input, output){
   )
   
   filtered_data_routes <- reactive(
-    dplyr::filter(website_routes_sf,
-                  PUB_RTE %in% input$routelines),
+    dplyr::filter(route_data,
+                  RouteAlpha %in% input$routelines),
+  )
+  
+  filtered_data_stops <- reactive(
+    dplyr::filter(website_stops_sf,
+                  ROUTE %in% input$routelines),
   )
   
   # Update Map and filteredRowsText After Options are Changed
@@ -360,13 +424,13 @@ server <- function(input, output){
   #Update map after routes are selected
   observeEvent(filtered_data_routes(), {
     if (nrow(filtered_data_routes()) == 0) {
-      proxy <- leafletProxy("point_map", data = website_routes_sf) %>%
+      proxy <- leafletProxy("point_map", data = route_data) %>%
         clearGroup("Show Routes")
     }
     else {
       proxy <- leafletProxy("point_map", data = filtered_data_routes()) %>%
         clearGroup("Show Routes") %>%
-        addPolylines(label = filtered_data_routes()$PUB_RTE, group="Show Routes", color=website_route_palette)
+        addPolylines(label = filtered_data_routes()$RouteAlpha, group="Show Routes", color=website_route_palette)
     }})
   
   # Update map when user updates rectangle from drawToolbar
@@ -455,11 +519,11 @@ server <- function(input, output){
       mutate(TotalProp = TotalCount/sum(TotalCount))
     if (!input$graph_show_other){
       count_plot_data <- count_plot_data %>%
-        filter(PlotVar != "Other")
+        dplyr::filter(PlotVar != "Other")
       prop_plot_data <- prop_plot_data %>%
-        filter(PlotVar != "Other")
+        dplyr::filter(PlotVar != "Other")
       summary_data <- summary_data %>%
-        filter(PlotVar != "Other")
+        dplyr::filter(PlotVar != "Other")
     }
     prop_plot <- prop_plot_data %>%
       ggplot() +

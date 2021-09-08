@@ -2,6 +2,9 @@
 title: "CusRel-Leaflet"
 output: html_document
 ---
+```{r}
+install.packages("cowplot")
+```
 
 ```{r}
 library(leaflet)
@@ -11,11 +14,6 @@ library(RColorBrewer)
 library(randomcoloR)
 library(geojsonio)
 ```
-
-```{r}
-install.packages("cowplot")
-```
-
 
 ```{r}
 # Read in data
@@ -50,11 +48,54 @@ website_route_palette <- distinctColorPalette(n)
 ```
 
 ```{r}
-#Routes and Stops Data
-website_routes <- geojson_read("Spring21RouteShape_MidSignup.json", what = "sp")
+#Stops Data (from static file)
 website_stops <- geojson_read("UniqueStops_Spring21_MS.json", what = "sp")
+website_stops_sf <- st_as_sf(website_stops)
+```
 
-website_routes_sf <- st_as_sf(website_routes)
+```{r}
+#Routes Data (from API)
+extract_NB_waypoint_columns <- function(patterns, colnames){
+  my_waypoints <- as_tibble(patterns) %>%
+    pull(Waypoints)
+  my_waypoints <- my_waypoints[[1]] %>%
+    dplyr::select(one_of(colnames))
+  return(my_waypoints)
+}
+
+route_data <- "http://api.actransit.org/transit/route/ALL/waypoints/" %>% 
+  GET(query = list(token = "BC36B05ADC9CB9A7977DD5A8878937DA")) %>% 
+  content(as = "text") %>% 
+  fromJSON() %>% 
+  as_tibble()
+
+route_data %>%
+  mutate(Waypoints=purrr::map(Patterns, extract_NB_waypoint_columns, c("Longitude", "Latitude")))
+
+all_patterns <- route_data %>%
+  pull(Patterns)
+
+waypoint_longitude <- map(all_patterns, extract_NB_waypoint_columns, "Longitude")
+
+route_data <- route_data %>% 
+  select(RouteAlpha, Patterns) %>% 
+  dplyr::mutate(Longitude = pmap(list(Patterns), extract_NB_waypoint_columns, "Longitude"),
+                Latitude = pmap(list(Patterns), extract_NB_waypoint_columns, "Latitude"))
+
+#Convert route_data to SF 
+route_data <- route_data %>% unnest(c(Longitude, Latitude)) 
+route_data <- st_as_sf(route_data, coords = c("Longitude", "Latitude"), crs = 4326)
+
+#Convert route_data from point to multilinestring
+route_data <- route_data %>% 
+  group_by(RouteAlpha) %>% 
+  summarise(do_union = FALSE) %>% 
+  st_cast("MULTILINESTRING")
+
+#List of route numbers 
+routeNums <- cus_rel_data$Route %>% 
+  sort() %>% 
+  unique()
 ```
 
 ```{r}
@@ -67,8 +108,8 @@ the_map <- cus_rel_data %>%
                      color = ~contact_source_palette(ContactSource), 
                      popup = ~Label) %>%
    addLegend("bottomright", colors = color_list, labels = contact_sources, title = "Contact Source") %>% 
-   addPolylines(data = website_routes_sf, label = website_routes_sf$PUB_RTE, group="Show Routes", color=website_route_palette) %>%
-   addCircleMarkers(data = website_stops, popup = website_stops$STP_DESCRI, group = "Show Stops", color = "thistle", radius = 0.05) %>%
+   addPolylines(data = route_data, label = route_data$RouteAlpha, group="Show Routes", color=website_route_palette) %>%
+   addCircleMarkers(data = website_stops_sf, popup = website_stops_sf$STP_DESCRI, group = "Show Stops", color = "black", radius = 0.05) %>%
    addLayersControl(
      overlayGroups = ("Show Stops"),
      options = layersControlOptions(collapsed = FALSE)
