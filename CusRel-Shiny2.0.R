@@ -39,6 +39,14 @@ extract_NB_waypoint_columns <- function(patterns, colnames){
   return(my_waypoints)
 }
 
+# Read in cusrel data, getting rid of time zone attribute
+cus_rel_data <- read_csv("Clean-CusRel-data.csv", na="") %>%
+  mutate(ReceivedDateTime=as.character(ReceivedDateTime),
+         ResolvedDateTime=as.character(ResolvedDateTime),
+         IncidentDateTime=as.character(IncidentDateTime),
+         updatedOn=as.character(updatedOn))
+
+# Get route data from AC Transit Online API
 route_data <- "http://api.actransit.org/transit/route/ALL/waypoints/" %>% 
   GET(query = list(token = "BC36B05ADC9CB9A7977DD5A8878937DA")) %>% 
   content(as = "text") %>% 
@@ -91,13 +99,6 @@ website_stops_sf <- st_as_sf(website_stops)
 # ReasonList <- apply(cus_rel_data[,c("Reason1", "Reason2")], 1, function(x) list(x[1], x[2]))
 # cus_rel_data2 <- cus_rel_data %>%
   # mutate(ReasonList=ReasonList)
-
-# Read in cusrel data, getting rid of time zone attribute
-cus_rel_data <- read_csv("Clean-CusRel-data.csv", na="") %>%
-  mutate(ReceivedDateTime=as.character(ReceivedDateTime),
-         ResolvedDateTime=as.character(ResolvedDateTime),
-         IncidentDateTime=as.character(IncidentDateTime),
-         updatedOn=as.character(updatedOn))
 
 ticketStatusChoices <- cus_rel_data %>%
   distinct(TicketStatus) %>%
